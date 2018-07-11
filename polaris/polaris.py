@@ -1,22 +1,22 @@
 import pickle
 
 from polaris.trials import Trials
-from polaris.params import calc_params
+from polaris.params import Domain
 
 
 class Polaris(object):
 
     def __init__(
-            self, fun, space, algo, trials,
+            self, fn, bounds, algo, trials,
             max_evals=10, logger=None, debug=False):
         """
         Polaris base class.
 
         Parameters
         ----------
-        fun : callable
-            function which Polaris will evaluate
-        space : list of polaris.params
+        fn : callable
+            fnction which Polaris will evaluate
+        bounds : array of params
             search range of hyperparameters
         algo : str
             search algorithms (random, tpe, bayesian)
@@ -28,8 +28,8 @@ class Polaris(object):
             make Polaris debug mode
         """
 
-        self.fun = fun
-        self.space = space
+        self.fn = fn
+        self.bounds = bounds
         self.algo = algo
         self.trials = trials
         self.max_evals = max_evals
@@ -45,13 +45,18 @@ class Polaris(object):
         Start evaluation up to max_evals count
         """
 
-        if self.trials is None:
+        if self._trials is None:
             self.trials = Trials()
 
+        domain = Domain(self.bounds, algo=self.algo)
+
         for eval_count in range(self.max_evals):
-            params = calc_params(self.trials, algo=self.algo)
-            exp_result = self.fun(params)
+            params = domain.predict(self.trials)
+            exp_result = self.fn(params)
             self.trials.add(exp_result, params, eval_count)
 
         if self.debug:
             pickle.dump(self.trials._trials)
+
+    def run_async(self, multi_node=False):
+        print(self.fn.__name__)
