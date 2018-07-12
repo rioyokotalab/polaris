@@ -36,6 +36,7 @@ def calc_next_params(domain, trials):
     model.fit(train_x, train_y)
 
     lowest_loss = trials.lowest_loss
+
     if trials.last_params is not None:
         last_params = trials.last_params
     else:

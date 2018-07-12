@@ -40,14 +40,15 @@ class Domain:
         return labels
 
     def random(self):
-        rand_param = {}
+        rand_param = []
         r = np.random.rand(1, self.n_params)
-        for i, b in enumerate(self.bounds):
-            label = b.label
-            rand_param[label] = b.low + r[i] * b.range()
+        for i, b in enumerate(sorted(self._bounds, key=lambda b: b.label)):
+            p = b.low + r[i] * b.range()
             if b.q is not None:
-                rand_param[label] = round(rand_param[label] / b.q) * b.q
-        return rand_param
+                rand_param.append(p)
+            else:
+                rand_param.append(round(p / b.q) * b.q)
+        return np.array(rand_param)
 
     def predict(self, trials):
         # trialsの結果を元にpredictする
