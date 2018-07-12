@@ -16,7 +16,7 @@ class Trials(object):
         self.trials = []
         self.lowest_loss = np.inf
 
-        self.best_param = None
+        self.best_params = None
         self.last_params = None
 
         # instance variables for optimizers
@@ -35,7 +35,7 @@ class Trials(object):
         t = {
             'result': result,
             'loss': loss,
-            'exp_key': self._exp_key,
+            'exp_key': self.exp_key,
             'params': params,
             'eval_count': eval_count,
         }
@@ -52,8 +52,9 @@ class Trials(object):
         self.last_params = np.array(last_params)
 
         # Set lowest loss to calculate expected improvements.
-        if loss < self._lowest_loss:
-            self._lowest_loss = loss
+        if loss < self.lowest_loss:
+            self.lowest_loss = loss
+            self.best_params = params
 
         # Because the iteration order is not determinstic,
         # sort params dictionary by alphabetical order.
@@ -62,12 +63,12 @@ class Trials(object):
             train_x_row.append(params[key])
 
         if self._train_x is None:
-            self._train_x = np.array(train_x_row)
+            self._train_x = np.array([train_x_row])
         else:
             self._train_x = np.vstack((self._train_x, train_x_row))
 
         if self._train_y is None:
-            self._train_y = np.array(loss)
+            self._train_y = np.array([loss])
         else:
             self._train_y = np.hstack((self._train_y, loss))
 
