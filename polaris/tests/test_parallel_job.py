@@ -16,7 +16,7 @@ def pseudo_train(params):
     }
 
 
-class TestPolaris(TestCase):
+class TestParallel(TestCase):
 
     def test_rand_opt(self):
         bounds = [
@@ -27,8 +27,8 @@ class TestPolaris(TestCase):
         logger = logging.getLogger(__name__)
         polaris = Polaris(
                 pseudo_train, bounds, 'random',
-                trials, 100, logger)
-        best_params = polaris.run()
+                trials, 20, logger)
+        best_params = polaris.run_parallel()
 
         self.assertGreater(best_params['lr'], 0.005)
         self.assertLess(best_params['lr'], 0.007)
@@ -46,10 +46,11 @@ class TestPolaris(TestCase):
         polaris = Polaris(
                 pseudo_train, bounds, 'bayesian_opt',
                 trials, 100, logger)
-        best_params = polaris.run()
+        best_params = polaris.run_parallel()
 
         self.assertGreater(best_params['lr'], 0.005)
         self.assertLess(best_params['lr'], 0.007)
 
         self.assertGreater(best_params['weight_decay'], 0.01)
         self.assertLess(best_params['weight_decay'], 0.03)
+

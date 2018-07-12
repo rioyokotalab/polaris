@@ -3,11 +3,9 @@ from enum import Enum
 import numpy as np
 
 
-class Status(Enum):
-    RUNNING = 0
-    SUCCESS = 1
-    FAILURE = 2
-
+STATUS_RUNNING = 0
+STATUS_FAILURE = 1
+STATUS_SUCCESS = 2
 
 class Trials(object):
 
@@ -40,10 +38,10 @@ class Trials(object):
             'eval_count': eval_count,
         }
 
-        if result['status'] == Status.SUCCESS:
-            t['status'] = Status.SUCCESS
+        if result['status'] == STATUS_SUCCESS:
+            t['status'] = STATUS_SUCCESS
         else:
-            t['status'] = Status.FAILURE
+            t['status'] = STATUS_FAILURE
 
         # Update last_params
         last_params = []

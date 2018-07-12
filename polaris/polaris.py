@@ -3,6 +3,7 @@ import pickle
 
 from polaris.trials import Trials
 from polaris.params import Domain
+from polaris.rabbitmq import JobClient
 
 
 class Polaris(object):
@@ -37,20 +38,15 @@ class Polaris(object):
         self.logger = logger
         self.debug = debug
 
-        # if type(trials) == 'Trials':
-        #     self.is_parallel = False
-        # else:
-        #     self.is_parallel = True
+        self.domain = Domain(self.bounds, algo=self.algo)
 
     def run(self):
         """
         Start evaluation up to max_evals count
         """
 
-        domain = Domain(self.bounds, algo=self.algo)
-
         for eval_count in range(self.max_evals):
-            params = domain.predict(self.trials)
+            params = self.domain.predict(self.trials)
             fn_params = copy.copy(params)
             fn_params['eval_count'] = eval_count
             exp_result = self.fn(fn_params)
@@ -61,5 +57,7 @@ class Polaris(object):
 
         return self.trials.best_params
 
-    def run_async(self, multi_node=False):
-        print(self.fn.__name__)
+    def run_parallel(self):
+        job_client = JobClient(self)
+        job_client.run()
+        return self.trials.best_params
