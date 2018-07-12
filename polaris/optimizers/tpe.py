@@ -1,6 +1,7 @@
 import numpy as np
 import scipy as sp
-import statsmodels as sm
+import statsmodels.api as sm
+# import statsmodels.api as sm
 
 def objective_function(x, l, g):
     return -l.pdf(x)/g.pdf(x)
@@ -20,13 +21,13 @@ def minimize(
 ):
     best = np.inf
     ret = None
-    for p in np.random.choice(x, sampling_num):
+    for p in x[np.random.choice(x.shape[0], sampling_num)]:
         sample = []
         for mean, sigma, (a, b) in zip(p, bw, bounds):
             a,b = trunc_range(a, b, mean, sigma)
             sample.append(sp.stats.truncnorm.rvs(a, b, loc=mean, scale=sigma))
             # ref. https://en.wikipedia.org/wiki/Truncated_normal_distribution
-        val = fun(sample, args)
+        val = fun(sample, *args)
         if not np.isfinite(val):
             continue
         if  val < best:
@@ -63,6 +64,9 @@ class tpe:
         pass
 
     def __call__(self, domain, trials):
+        next_params = {}
+
+
         if len(trials) <= self.n_min+2:
             random_result = domain.random()
             for index, fieldname in enumerate(domain.fieldnames):
@@ -103,7 +107,6 @@ class tpe:
             args=(l, g)
         )
 
-        next_params = {}
         for index, fieldname in enumerate(domain.fieldnames):
             next_params[fieldname] = minimize_result[index]
 

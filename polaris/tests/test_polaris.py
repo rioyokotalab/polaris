@@ -24,7 +24,7 @@ class TestPolaris(TestCase):
         trials = Trials(exp_key='this_is_test')
         logger = logging.getLogger(__name__)
         polaris = Polaris(
-                pseudo_train, bounds, 'bayesian_opt',
+                pseudo_train, bounds, 'tpe',
                 trials, 100, logger)
         best_params = polaris.run()
         print(best_params)
@@ -34,4 +34,3 @@ class TestPolaris(TestCase):
 
         self.assertGreater(best_params['weight_decay'], 0.01)
         self.assertLess(best_params['weight_decay'], 0.03)
-
