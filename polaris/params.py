@@ -6,6 +6,47 @@ OPTIMIZERS = {
     'bayesian_opt': bayesian_opt.calc_next_params
 }
 
+class Param:
+    """
+    Base class of params
+    """
+    def __init__(self, label):
+        self.label = label
+    def random():
+        return NoImplementationError()
+    def val(x):
+        return NoImplementationError()
+
+class Uniform(Param):
+    def __init__(self, label, low, high, q=None):
+        super(Uniform, self).__init__(label)
+        self.low = low
+        self.high = high
+        self.q = q
+    def random():
+        return np.random.uniform(self.low, self.high)
+    def val(x):
+        return x
+
+class LogUniform(Uniform):
+    def __init__(self, label, low, high, q=None):
+        super(LogUniform, self).__init__(label, np.log(low), np.log(high), q)
+    def random():
+        return super(loguniform, self).random()
+    def val(x):
+        return np.exp(x)
+
+class Choice(Param):
+    def __init__(self, label, options):
+        super(Choice, self).__init__(label)
+        self.options = options
+        self.index = np.array([i for i in range(len(options))])
+    def random():
+        return np.random.choice(len(self.options))
+    def val(x):
+        return self.options[x]
+
+
 
 class Bounds:
 
@@ -21,9 +62,9 @@ class Bounds:
 
 class Domain:
 
-    def __init__(self, bounds, algo='random'):
-        self._bounds = bounds
-        self.n_params = len(bounds)
+    def __init__(self, space, algo='random'):
+        self.space = space
+        # self.n_params = len(bounds)
 
     @property
     def bounds(self):
@@ -52,3 +93,5 @@ class Domain:
     def predict(self, trials):
         # trialsの結果を元にpredictする
         return OPTIMIZERS[self.algo](self, trials)
+    def suggest(self, trials):
+        return self.predict(trials)
