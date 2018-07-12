@@ -24,7 +24,7 @@ class JobClient():
 
     def on_request(self, ch, method, props, body):
         if self.eval_count >= self.polaris.max_evals:
-            self.channel.close()
+            self.connection.close()
 
         domain = self.polaris.domain
         trials = self.polaris.trials
@@ -32,7 +32,14 @@ class JobClient():
 
         fn = self.polaris.fn
         fn_module = fn.__module__
+        if fn_module == '__main__':
+            # TODO This translation is ugly...
+            import __main__
+            fn_module = __main__.__file__.replace('/', '.').replace('.py', '')
+
         fn_name = fn.__name__
+
+        self.eval_count += 1
         ctx = {
             'eval_count': self.eval_count,
             'params': next_params,
@@ -40,7 +47,6 @@ class JobClient():
             'fn_name': fn_name,
         }
 
-        self.eval_count += 1
         self.channel.basic_publish(
                 exchange='',
                 routing_key='job_queue',
@@ -62,4 +68,8 @@ class JobClient():
 
     def run(self):
         print('Start parallel execution...')
-        self.channel.start_consuming()
+
+        try:
+            self.channel.start_consuming()
+        except pika.exceptions.ChannelClosed:
+            print('All jobs have finished')
