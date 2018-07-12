@@ -20,6 +20,7 @@ Polaris is a hyperparamter tuning library focusing on reducing time of tuning.
 - [ ] Random Search
 - [ ] Tree of Parzen Estimators (TPE)
 - [ ] Bayesian Optimization
+- [ ] Bayesian Optimization with Hiperbnad (BOHB)
 
 ### Polaris UI
 - [ ] Comparing hyperparamters of multiple experiments
