@@ -27,13 +27,15 @@ def minimize(
             sample.append(sp.stats.truncnorm.rvs(a, b, loc=mean, scale=sigma))
             # ref. https://en.wikipedia.org/wiki/Truncated_normal_distribution
         val = fun(sample, args)
+        if not np.isfinite(val):
+            continue
         if  val < best:
             best = val
             ret = sample
     return ret
 
 class tpe:
-    def __init__(self, gamma=0.15, bw=None, n_min=None, bw_weight=3., sampling_num=64):
+    def __init__(self, gamma=0.15, bw=None, n_min=8, bw_weight=3., sampling_num=64):
         """
         tpe suggest
         gamma: float
@@ -47,13 +49,17 @@ class tpe:
             (default) d (number of dimension) + 1
         bw_weight: float
             factor of l' model's multiplied bandwidth
-            (default) 1.0
+            (default) 3.0
+        sampling_num: int
+            sampling_num for minimize
+            (default) 64
+
         """
-        self.gamma = gamma
+        self.gamma = float(gamma)
         self.bw = bw
         self.n_min = int(n_min)
-        self.bw_weight = bw_weight
-        self.sampling_num = sampling_num
+        self.bw_weight = float(bw_weight)
+        self.sampling_num = int(sampling_num)
         pass
 
     def __call__(self, domain, trials):
@@ -75,11 +81,13 @@ class tpe:
         v_types = 'c'*domain.n_params
         l = sm.nonparametric.KDEMultivariate(
             x_l,
-            v_types
+            v_types,
+            bw=self.bw
         )
-        g = xm.nonparametric.KDEMultivariate(
+        g = sm.nonparametric.KDEMultivariate(
             x_g,
-            v_types
+            v_types,
+            bw=self.bw
         )
         bw = l.bw*self.bw_weight
         bounds = domain.bounds
