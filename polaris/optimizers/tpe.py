@@ -63,8 +63,11 @@ class tpe:
         pass
 
     def __call__(self, domain, trials):
-        if len(trials) < self.n_min+2:
-            return domain.random()
+        if len(trials) <= self.n_min+2:
+            random_result = domain.random()
+            for index, fieldname in enumerate(domain.fieldnames):
+                next_params[fieldname] = random_result[index]
+            return next_params
 
         train_x, train_y = trials.get_train_data()
         idx = np.argsort(train_y)

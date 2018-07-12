@@ -1,9 +1,10 @@
 import numpy as np
 
-from polaris.optimizers import bayesian_opt
+from polaris.optimizers import bayesian_opt,tpe
 
 OPTIMIZERS = {
     'bayesian_opt': bayesian_opt.calc_next_params
+    'tpe' :tpe.tpe()
 }
 
 
