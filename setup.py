@@ -31,6 +31,6 @@ setup(
         ],
     platforms=['Linux', 'OS-X'],
     license='MIT',
-    install_requires=['numpy', 'scikit-learn', 'scipy'],
+    install_requires=['numpy', 'scikit-learn', 'scipy', 'pika'],
     tests_require=['pytest'],
 )
