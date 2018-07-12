@@ -1,3 +1,4 @@
+import copy
 import pickle
 
 from polaris.trials import Trials
@@ -50,10 +51,10 @@ class Polaris(object):
 
         for eval_count in range(self.max_evals):
             params = domain.predict(self.trials)
-            exp_result = self.fn(params)
+            fn_params = copy.copy(params)
+            fn_params['eval_count'] = eval_count
+            exp_result = self.fn(fn_params)
             self.trials.add(exp_result, params, eval_count)
-
-        # print(self.trials.best_params)
 
         if self.debug:
             pickle.dump(self.trials.trials)

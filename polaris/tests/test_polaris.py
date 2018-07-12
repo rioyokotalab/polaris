@@ -16,7 +16,25 @@ def pseudo_train(params):
 
 class TestPolaris(TestCase):
 
-    def test_polaris(self):
+    def test_rand_opt(self):
+        bounds = [
+            params.Bounds('lr', 0.001, 0.01),
+            params.Bounds('weight_decay', 0.0002, 0.04),
+        ]
+        trials = Trials(exp_key='this_is_test')
+        logger = logging.getLogger(__name__)
+        polaris = Polaris(
+                pseudo_train, bounds, 'random',
+                trials, 100, logger)
+        best_params = polaris.run()
+
+        self.assertGreater(best_params['lr'], 0.005)
+        self.assertLess(best_params['lr'], 0.007)
+
+        self.assertGreater(best_params['weight_decay'], 0.01)
+        self.assertLess(best_params['weight_decay'], 0.03)
+
+    def test_bayesian_opt(self):
         bounds = [
             params.Bounds('lr', 0.001, 0.01),
             params.Bounds('weight_decay', 0.0002, 0.04),
@@ -27,11 +45,9 @@ class TestPolaris(TestCase):
                 pseudo_train, bounds, 'bayesian_opt',
                 trials, 100, logger)
         best_params = polaris.run()
-        print(best_params)
 
         self.assertGreater(best_params['lr'], 0.005)
         self.assertLess(best_params['lr'], 0.007)
 
         self.assertGreater(best_params['weight_decay'], 0.01)
         self.assertLess(best_params['weight_decay'], 0.03)
-
