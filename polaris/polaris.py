@@ -34,19 +34,17 @@ class Polaris(object):
         self.trials = trials
         self.max_evals = max_evals
         self.logger = logger
+        self.debug = debug
 
-        if type(trials) == 'Trials':
-            self.is_parallel = False
-        else:
-            self.is_parallel = True
+        # if type(trials) == 'Trials':
+        #     self.is_parallel = False
+        # else:
+        #     self.is_parallel = True
 
     def run(self):
         """
         Start evaluation up to max_evals count
         """
-
-        if self._trials is None:
-            self.trials = Trials()
 
         domain = Domain(self.bounds, algo=self.algo)
 
@@ -55,8 +53,12 @@ class Polaris(object):
             exp_result = self.fn(params)
             self.trials.add(exp_result, params, eval_count)
 
+        # print(self.trials.best_params)
+
         if self.debug:
-            pickle.dump(self.trials._trials)
+            pickle.dump(self.trials.trials)
+
+        return self.trials.best_params
 
     def run_async(self, multi_node=False):
         print(self.fn.__name__)

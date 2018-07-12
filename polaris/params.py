@@ -1,6 +1,6 @@
 import numpy as np
 
-from optimizers import bayesian_opt
+from polaris.optimizers import bayesian_opt
 
 OPTIMIZERS = {
     'bayesian_opt': bayesian_opt.calc_next_params
@@ -22,33 +22,35 @@ class Bounds:
 class Domain:
 
     def __init__(self, bounds, algo='random'):
-        self._bounds = bounds
         self.n_params = len(bounds)
+        self._algo = algo
+        self._bounds = sorted(bounds, key=lambda b: b.label)
 
     @property
     def bounds(self):
         array_bounds = []
-        for b in sorted(self._bounds, key=lambda b: b.label):
+        for b in self._bounds:
             array_bounds.append((b.low, b.high))
         return array_bounds
 
     @property
     def fieldnames(self):
         labels = []
-        for b in sorted(self._bounds, key=lambda b: b.label):
+        for b in self._bounds:
             labels.append(b.label)
         return labels
 
     def random(self):
-        rand_param = {}
+        rand_param = []
         r = np.random.rand(1, self.n_params)
-        for i, b in enumerate(self.bounds):
-            label = b.label
-            rand_param[label] = b.low + r[i] * b.range()
-            if b.q is not None:
-                rand_param[label] = round(rand_param[label] / b.q) * b.q
-        return rand_param
+        for i, b in enumerate(self._bounds):
+            p = b.low + r[0][i] * b.range()
+            if b.q is None:
+                rand_param.append(p)
+            else:
+                rand_param.append(round(p / b.q) * b.q)
+        return np.array(rand_param)
 
     def predict(self, trials):
         # trialsの結果を元にpredictする
-        return OPTIMIZERS[self.algo](self, trials)
+        return OPTIMIZERS[self._algo](self, trials)

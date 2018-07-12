@@ -4,8 +4,8 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 
 
-def expected_improvement(x, model, lowest_loss, n_params):
-    next_params = x.reshape(-1, n_params)
+def expected_improvement(x, model, lowest_loss):
+    next_params = x.reshape(1, -1)
 
     mu, sigma = model.predict(next_params, return_std=True)
 
@@ -19,16 +19,21 @@ def expected_improvement(x, model, lowest_loss, n_params):
 
 
 def calc_next_params(domain, trials):
+    next_params = {}
+
     # At first time, get random params
-    if len(trials) == 0:
-        return domain.random()
+    if len(trials) <= 5:
+        random_result = domain.random()
+        for index, fieldname in enumerate(domain.fieldnames):
+            next_params[fieldname] = random_result[index]
+        return next_params
 
     train_x, train_y = trials.get_train_data()
 
     alpha = 1e-5
     kernel = gp.kernels.Matern()
     model = gp.GaussianProcessRegressor(
-            kernal=kernel,
+            kernel=kernel,
             alpha=alpha,
             n_restarts_optimizer=10,
             normalize_y=True)
@@ -36,20 +41,15 @@ def calc_next_params(domain, trials):
     model.fit(train_x, train_y)
 
     lowest_loss = trials.lowest_loss
-    if trials.last_params is not None:
-        last_params = trials.last_params
-    else:
-        last_params = domain.random()
 
     minimize_result = minimize(
             fun=expected_improvement,
-            x0=last_params.reshape(1, -1),
+            x0=domain.random(),
             bounds=domain.bounds,
             method='L-BFGS-B',
-            args=(model, lowest_loss, domain.n_params)
+            args=(model, lowest_loss)
             )
 
-    next_params = {}
     for index, fieldname in enumerate(domain.fieldnames):
         next_params[fieldname] = minimize_result.x[index]
 
