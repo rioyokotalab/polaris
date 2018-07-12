@@ -1,13 +1,39 @@
 import numpy as np
 import scipy as sp
 import statsmodels as sm
-from scipy.optimize import minimize
 
 def objective_function(x, l, g):
     return -l.pdf(x)/g.pdf(x)
 
+
+def trunc_range(a, b , m, s):
+    # ref. https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.truncnorm.html
+    return (a-m)/s,(b-m)/s
+
+def minimize(
+    fun,
+    x,
+    sampling_num,
+    bw,
+    bounds,
+    args=None
+):
+    best = np.inf
+    ret = None
+    for p in np.random.choice(x, sampling_num):
+        sample = []
+        for mean, sigma, (a, b) in zip(p, bw, bounds):
+            a,b = trunc_range(a, b, mean, sigma)
+            sample.append(sp.stats.truncnorm.rvs(a, b, loc=mean, scale=sigma))
+            # ref. https://en.wikipedia.org/wiki/Truncated_normal_distribution
+        val = fun(sample, args)
+        if  val < best:
+            best = val
+            ret = sample
+    return ret
+
 class tpe:
-    def __init__(self, gamma=0.15, bw=None, n_min=None, bw_weight=1.0):
+    def __init__(self, gamma=0.15, bw=None, n_min=None, bw_weight=3., sampling_num=64):
         """
         tpe suggest
         gamma: float
@@ -27,6 +53,7 @@ class tpe:
         self.bw = bw
         self.n_min = int(n_min)
         self.bw_weight = bw_weight
+        self.sampling_num = sampling_num
         pass
 
     def __call__(self, domain, trials):
@@ -42,7 +69,7 @@ class tpe:
         x_l = train_x[idx[:l_len],:]
         x_g = train_x[idx[-g_len:],:]
 #
-#       I want to get the types of domain
+#       I want to get the types of params from domain
 #       v_types = "ccccuuuuuooooo" ref. http://www.statsmodels.org/dev/generated/statsmodels.nonparametric.kernel_density.KDEMultivariate.html
 #
         v_types = 'c'*domain.n_params
@@ -51,35 +78,25 @@ class tpe:
             v_types
         )
         g = xm.nonparametric.KDEMultivariate(
-            g_l,
+            x_g,
             v_types
         )
-        # l_dash = sm.nonparametric.KDEMultivariate(
-        #     x_l,
-        #     v_types,
-        #     bw = l.bw*self.bw_weight
-        # )
+        bw = l.bw*self.bw_weight
+        bounds = domain.bounds
         minimize_result = minimize(
-            fun = objective_function,
-            x0 = np.mean(x_l,axis=0),
-            bounds = domain.bounds,
-            method = 'L-BFGS-B',
-            args = (l, g)
+            fun=objective_function,
+            x=x_l,
+            sampling_num=self.sampling_num,
+            bw=bw,
+            bounds=bounds,
+            args=(l, g)
         )
 
         next_params = {}
         for index, fieldname in enumerate(domain.fieldnames):
-            next_params[fieldname] = minimize_result.x[index]
+            next_params[fieldname] = minimize_result[index]
 
         return next_params
-
-
-
-
-
-
-
-
 
 def test():
     pass
