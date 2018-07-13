@@ -1,7 +1,6 @@
 import copy
 import pickle
 
-from polaris.trials import Trials
 from polaris.params import Domain
 from polaris.rabbitmq import JobClient
 

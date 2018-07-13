@@ -35,7 +35,7 @@ def calc_next_params(domain, trials):
     model = gp.GaussianProcessRegressor(
             kernel=kernel,
             alpha=alpha,
-            n_restarts_optimizer=10,
+            n_restarts_optimizer=20,
             normalize_y=True)
 
     model.fit(train_x, train_y)

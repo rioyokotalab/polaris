@@ -1,11 +1,9 @@
 import copy
 import importlib
 import json
-import uuid
 
 import pika
 
-worker_id = 'worker_%s' % str(uuid.uuid4())
 connection = pika.BlockingConnection(
         pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()

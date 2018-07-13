@@ -1,6 +1,4 @@
 import json
-import random
-import uuid
 
 import pika
 
@@ -32,12 +30,11 @@ class JobClient():
 
         fn = self.polaris.fn
         fn_module = fn.__module__
+        fn_name = fn.__name__
         if fn_module == '__main__':
-            # TODO This translation is ugly...
+            # TODO This transformation is ugly...
             import __main__
             fn_module = __main__.__file__.replace('/', '.').replace('.py', '')
-
-        fn_name = fn.__name__
 
         self.eval_count += 1
         ctx = {

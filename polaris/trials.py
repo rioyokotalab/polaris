@@ -7,6 +7,7 @@ STATUS_RUNNING = 0
 STATUS_FAILURE = 1
 STATUS_SUCCESS = 2
 
+
 class Trials(object):
 
     def __init__(self, exp_key=None):
