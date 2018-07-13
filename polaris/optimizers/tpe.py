@@ -96,7 +96,10 @@ class tpe:
             v_types,
             bw=self.bw
         )
+
         bw = l.bw*self.bw_weight
+        for w in np.nditer(bw,op_flags=['readwrite']):
+            w[...] = max(w, 1e-3*self.bw_weight)
         bounds = domain.bounds
         minimize_result = minimize(
             fun=objective_function,
