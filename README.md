@@ -1,6 +1,6 @@
 # Polaris
 
-Polaris is a hyperparamter tuning library focusing on reducing time of tuning.
+Polaris is a hyperparamter tuning library focusing on reducing time.
 We plan to support every state-of-art tuning method as follows.
 
 -  Random Search
