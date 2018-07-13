@@ -1,10 +1,12 @@
 import numpy as np
 
-from polaris.optimizers import bayesian_opt,tpe
+
+from polaris.optimizers import bayesian_opt, rand, tpe
 
 OPTIMIZERS = {
     'bayesian_opt': bayesian_opt.calc_next_params,
-    'tpe' :tpe.tpe()
+    'random': rand.calc_next_params
+    'tpe': tpe.tpe()
 }
 
 
@@ -53,5 +55,4 @@ class Domain:
         return np.array(rand_param)
 
     def predict(self, trials):
-        # trialsの結果を元にpredictする
         return OPTIMIZERS[self._algo](self, trials)

@@ -1,12 +1,7 @@
-from enum import Enum
-
 import numpy as np
 
-
-class Status(Enum):
-    RUNNING = 0
-    SUCCESS = 1
-    FAILURE = 2
+STATUS_FAILURE = 1
+STATUS_SUCCESS = 2
 
 
 class Trials(object):
@@ -40,10 +35,26 @@ class Trials(object):
             'eval_count': eval_count,
         }
 
-        if result['status'] == Status.SUCCESS:
-            t['status'] = Status.SUCCESS
+        if result['status'] == STATUS_SUCCESS:
+            t['status'] = STATUS_SUCCESS
+
+            # Because the iteration order is not determinstic,
+            # sort params dictionary by alphabetical order.
+            train_x_row = []
+            for key in sorted(params):
+                train_x_row.append(params[key])
+
+            if self._train_x is None:
+                self._train_x = np.array([train_x_row])
+            else:
+                self._train_x = np.vstack((self._train_x, train_x_row))
+
+            if self._train_y is None:
+                self._train_y = np.array([loss])
+            else:
+                self._train_y = np.hstack((self._train_y, loss))
         else:
-            t['status'] = Status.FAILURE
+            t['status'] = STATUS_FAILURE
 
         # Update last_params
         last_params = []
@@ -55,22 +66,6 @@ class Trials(object):
         if loss < self.lowest_loss:
             self.lowest_loss = loss
             self.best_params = params
-
-        # Because the iteration order is not determinstic,
-        # sort params dictionary by alphabetical order.
-        train_x_row = []
-        for key in sorted(params):
-            train_x_row.append(params[key])
-
-        if self._train_x is None:
-            self._train_x = np.array([train_x_row])
-        else:
-            self._train_x = np.vstack((self._train_x, train_x_row))
-
-        if self._train_y is None:
-            self._train_y = np.array([loss])
-        else:
-            self._train_y = np.hstack((self._train_y, loss))
 
         self.trials.append(t)
 
