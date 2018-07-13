@@ -1,6 +1,4 @@
-import numpy as np
 import sklearn.gaussian_process as gp
-from scipy.stats import norm
 from scipy.optimize import minimize
 
 
@@ -9,14 +7,8 @@ def expected_improvement(x, model, lowest_loss):
 
     mu, sigma = model.predict(next_params, return_std=True)
 
-    with np.errstate(divide='ignore'):
-        Z = (lowest_loss - mu) / sigma
-        expected_improvement = (lowest_loss - mu) * \
-            norm.cdf(Z) + sigma * norm.pdf(Z)
-        expected_improvement[sigma == 0.0] == 0.0
-
-    if expected_improvement < 0.0:
-        expected_improvement = 0.0
+    expected_lowest = mu - sigma
+    expected_improvement = lowest_loss - expected_lowest
 
     return -1 * expected_improvement
 
@@ -33,13 +25,10 @@ def calc_next_params(domain, trials):
 
     train_x, train_y = trials.get_train_data()
 
-    alpha = 1e-5
     kernel = gp.kernels.Matern()
     model = gp.GaussianProcessRegressor(
             kernel=kernel,
-            alpha=alpha,
-            n_restarts_optimizer=20,
-            normalize_y=True)
+            n_restarts_optimizer=9)
 
     model.fit(train_x, train_y)
 
@@ -47,7 +36,7 @@ def calc_next_params(domain, trials):
 
     minimize_result = minimize(
             fun=expected_improvement,
-            x0=domain.random(),
+            x0=trials.last_params,
             bounds=domain.bounds,
             method='L-BFGS-B',
             args=(model, lowest_loss)

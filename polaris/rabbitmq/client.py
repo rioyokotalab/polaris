@@ -2,6 +2,12 @@ import json
 
 import pika
 
+from polaris.rabbitmq.config import (
+    RABBITMQ_HOST,
+    RABBITMQ_USERNAME,
+    RABBITMQ_PASSWORD
+)
+
 
 class JobClient():
 
@@ -9,8 +15,16 @@ class JobClient():
         self.polaris = polaris
         self.eval_count = 0
 
-        self.connection = pika.BlockingConnection(
-               pika.ConnectionParameters(host='localhost'))
+        if RABBITMQ_USERNAME and RABBITMQ_PASSWORD:
+            credentials = pika.PlainCredentials(
+                    RABBITMQ_USERNAME, RABBITMQ_PASSWORD)
+            rabbitmq_params = pika.ConnectionParameters(
+                    host=RABBITMQ_HOST,
+                    credentials=credentials)
+        else:
+            rabbitmq_params = pika.ConnectionParameters(host=RABBITMQ_HOST)
+        self.connection = pika.BlockingConnection(rabbitmq_params)
+
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue='request_job_queue')
         result = self.channel.queue_declare(exclusive=True)
@@ -19,8 +33,13 @@ class JobClient():
                 self.on_response, no_ack=True, queue=self.callback_queue)
         self.channel.basic_consume(
                 self.on_request, no_ack=True, queue='request_job_queue')
+        self.channel.exchange_declare(
+                exchange='job_exchange', exchange_type='direct')
 
     def on_request(self, ch, method, props, body):
+        self.send_job()
+
+    def send_job(self):
         if self.eval_count >= self.polaris.max_evals:
             self.connection.close()
 
@@ -45,8 +64,8 @@ class JobClient():
         }
 
         self.channel.basic_publish(
-                exchange='',
-                routing_key='job_queue',
+                exchange='job_exchange',
+                routing_key=trials.exp_key,
                 properties=pika.BasicProperties(
                     reply_to=self.callback_queue,
                     ),
@@ -67,6 +86,7 @@ class JobClient():
         print('Start parallel execution...')
 
         try:
+            self.send_job()
             self.channel.start_consuming()
         except pika.exceptions.ChannelClosed:
             print('All jobs have finished')

@@ -1,7 +1,5 @@
 import numpy as np
 
-
-STATUS_RUNNING = 0
 STATUS_FAILURE = 1
 STATUS_SUCCESS = 2
 
@@ -39,6 +37,22 @@ class Trials(object):
 
         if result['status'] == STATUS_SUCCESS:
             t['status'] = STATUS_SUCCESS
+
+            # Because the iteration order is not determinstic,
+            # sort params dictionary by alphabetical order.
+            train_x_row = []
+            for key in sorted(params):
+                train_x_row.append(params[key])
+
+            if self._train_x is None:
+                self._train_x = np.array([train_x_row])
+            else:
+                self._train_x = np.vstack((self._train_x, train_x_row))
+
+            if self._train_y is None:
+                self._train_y = np.array([loss])
+            else:
+                self._train_y = np.hstack((self._train_y, loss))
         else:
             t['status'] = STATUS_FAILURE
 
@@ -52,22 +66,6 @@ class Trials(object):
         if loss < self.lowest_loss:
             self.lowest_loss = loss
             self.best_params = params
-
-        # Because the iteration order is not determinstic,
-        # sort params dictionary by alphabetical order.
-        train_x_row = []
-        for key in sorted(params):
-            train_x_row.append(params[key])
-
-        if self._train_x is None:
-            self._train_x = np.array([train_x_row])
-        else:
-            self._train_x = np.vstack((self._train_x, train_x_row))
-
-        if self._train_y is None:
-            self._train_y = np.array([loss])
-        else:
-            self._train_y = np.hstack((self._train_y, loss))
 
         self.trials.append(t)
 
