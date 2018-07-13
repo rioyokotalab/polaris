@@ -30,6 +30,7 @@ class JobWorker():
 
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue='job_queue')
+
         self.channel.exchange_declare(
                 exchange='job_exchange', exchange_type='direct')
 
@@ -37,7 +38,7 @@ class JobWorker():
             self.comm = MPI.COMM_WORLD
             self.rank = self.comm.Get_rank()
 
-    def __call__(self):
+    def start(self):
         try:
             if (not self.use_mpi) or self.rank == 0:
                 self.channel.basic_qos(prefetch_count=1)
@@ -111,9 +112,9 @@ class JobWorker():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
             description='Start a job worker for polaris')
-    parser.add_argument('--exp_key', '--e')
+    parser.add_argument('--exp-key', '--e')
     parser.add_argument('--mpi', '--m', action='store_true')
     args = parser.parse_args()
 
     worker = JobWorker(args)
-    worker()
+    worker.start()

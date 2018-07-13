@@ -26,8 +26,9 @@ class JobClient():
         self.connection = pika.BlockingConnection(rabbitmq_params)
 
         self.channel = self.connection.channel()
-        self.channel.queue_declare(queue='request_job_queue')
         result = self.channel.queue_declare(exclusive=True)
+        self.channel.queue_declare(queue='request_job_queue')
+
         self.callback_queue = result.method.queue
         self.channel.basic_consume(
                 self.on_response, no_ack=True, queue=self.callback_queue)

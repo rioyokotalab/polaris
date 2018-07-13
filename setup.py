@@ -10,6 +10,7 @@ def get_long_description():
 setup(
     name='polaris',
     packages=find_packages(),
+    scripts=['bin/polaris-worker'],
     version='0.1',
     author='Shun Iwase, Linsho Kaku',
     author_email='s@sh8.io',
