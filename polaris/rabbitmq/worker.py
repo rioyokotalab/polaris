@@ -3,7 +3,6 @@ import copy
 import importlib
 import json
 
-from mpi4py import MPI
 import pika
 
 from polaris.rabbitmq.config import (
@@ -35,6 +34,7 @@ class JobWorker():
                 exchange='job_exchange', exchange_type='direct')
 
         if self.use_mpi:
+            from mpi4py import MPI
             self.comm = MPI.COMM_WORLD
             self.rank = self.comm.Get_rank()
 
@@ -65,6 +65,7 @@ class JobWorker():
             self.connection.close()
 
             if self.use_mpi:
+                from mpi4py import MPI
                 MPI.Finalize()
 
     def on_request(self, ch, method, props, body):
