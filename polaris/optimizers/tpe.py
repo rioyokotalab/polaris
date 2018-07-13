@@ -35,7 +35,7 @@ def minimize(
             ret = sample
     return ret
 
-class tpe:
+class TPE:
     def __init__(self, gamma=0.15, bw=None, n_min=8, bw_weight=3., sampling_num=64):
         """
         tpe suggest
