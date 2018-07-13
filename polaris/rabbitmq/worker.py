@@ -12,7 +12,6 @@ channel.queue_declare(queue='job_queue')
 
 def on_request(ch, method, props, body):
     ctx = json.loads(body)
-    print(ctx)
 
     params = ctx['params']
     eval_count = ctx['eval_count']

@@ -10,10 +10,13 @@ def expected_improvement(x, model, lowest_loss):
     mu, sigma = model.predict(next_params, return_std=True)
 
     with np.errstate(divide='ignore'):
-        Z = (mu - lowest_loss) / sigma
-        expected_improvement = (mu - lowest_loss) * \
+        Z = (lowest_loss - mu) / sigma
+        expected_improvement = (lowest_loss - mu) * \
             norm.cdf(Z) + sigma * norm.pdf(Z)
         expected_improvement[sigma == 0.0] == 0.0
+
+    if expected_improvement < 0.0:
+        expected_improvement = 0.0
 
     return -1 * expected_improvement
 
