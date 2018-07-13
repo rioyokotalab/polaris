@@ -13,7 +13,10 @@ We plan to support every state-of-art tuning method as follows.
 
 ## Installation
 
-`pip install polaris`
+```shell
+$ brew install rabbitmq
+$ pip install polaris
+```
 
 ## Examples
 
