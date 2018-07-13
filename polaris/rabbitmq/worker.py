@@ -13,9 +13,10 @@ from polaris.rabbitmq.config import (
 
 
 class JobWorker():
-    def __init__(self, args):
+    def __init__(self, args, logger=None, debug=False):
         self.exp_key = args.exp_key
         self.use_mpi = args.mpi
+        self.debug = debug
 
         if RABBITMQ_USERNAME and RABBITMQ_PASSWORD:
             credentials = pika.PlainCredentials(
@@ -26,6 +27,23 @@ class JobWorker():
         else:
             rabbitmq_params = pika.ConnectionParameters(host=RABBITMQ_HOST)
         self.connection = pika.BlockingConnection(rabbitmq_params)
+
+        if logger is None:
+            import logging
+            self.logger = logging.getLogger(__name__)
+
+            if self.debug:
+                self.logger.setLevel(logging.DEBUG)
+            else:
+                self.logger.setLevel(logging.INFO)
+
+            stream = logging.StreamHandler()
+            formatter = logging.Formatter(
+                    '%(asctime)s:%(lineno)d:%(levelname)s:%(message)s')
+            stream.setFormatter(formatter)
+            self.logger.addHandler(stream)
+        else:
+            self.logger = logger
 
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue='job_queue')
@@ -43,15 +61,14 @@ class JobWorker():
             if (not self.use_mpi) or self.rank == 0:
                 self.channel.basic_qos(prefetch_count=1)
 
-                if self.exp_key:
-                    self.channel.queue_bind(
-                            exchange='job_exchange',
-                            queue='job_queue',
-                            routing_key=self.exp_key)
+                self.channel.queue_bind(
+                        exchange='job_exchange',
+                        queue='job_queue',
+                        routing_key=self.exp_key)
 
                 self.channel.basic_consume(self.on_request, queue='job_queue')
 
-                print('Waiting for new job...')
+                self.logger.info('Waiting for new job...')
                 self.request_job()
 
                 self.channel.start_consuming()
@@ -61,7 +78,7 @@ class JobWorker():
                     ctx = self.comm.bcast(ctx, root=0)
                     self.run(ctx)
         except KeyboardInterrupt:
-            print('Stop current worker...')
+            self.logger.info('Stop current worker...')
             self.connection.close()
 
             if self.use_mpi:
@@ -70,8 +87,7 @@ class JobWorker():
 
     def on_request(self, ch, method, props, body):
         ctx = json.loads(body)
-
-        print(ctx)
+        self.logger.info(ctx)
 
         if self.use_mpi:
             self.comm.bcast(ctx, root=0)
@@ -88,8 +104,8 @@ class JobWorker():
 
     def request_job(self):
         self.channel.basic_publish(
-                exchange='',
-                routing_key='request_job_queue',
+                exchange='job_exchange',
+                routing_key=f'request_{self.exp_key}',
                 body=''
             )
 
@@ -108,14 +124,3 @@ class JobWorker():
         exp_result['params'] = params
 
         return exp_result
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-            description='Start a job worker for polaris')
-    parser.add_argument('--exp-key', '--e')
-    parser.add_argument('--mpi', '--m', action='store_true')
-    args = parser.parse_args()
-
-    worker = JobWorker(args)
-    worker.start()

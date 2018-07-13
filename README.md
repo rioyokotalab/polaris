@@ -41,10 +41,10 @@ if __name__ == '__main__':
         params.Bounds('lr', 0.001, 0.01),
         params.Bounds('weight_decay', 0.0002, 0.04),
     ]
-    trials = Trials(exp_key='this_is_test')
+    trials = Trials()
     polaris = Polaris(
             pseudo_train, bounds, 'bayesian_opt',
-            trials, max_evals=100)
+            trials, max_evals=100, exp_key='this_is_test')
     best_params = polaris.run()
     print(best_params)
 ```
@@ -55,14 +55,14 @@ if __name__ == '__main__':
 
 1. Run `rabbitmq-server`
 1. Set `RABBIT_MQ_HOST`, `RABBIT_MQ_USERNAME`, `RABBIT_MQ_PASSWORD`
-1. Run `polaris-worker` (You can specify the exp_key with --exp-key option)
+1. Run `polaris-worker --exp-key this_is_test`
 1. Run codes as follows
 
 ### Multiple Processes (Use MPI)
 
 1. Run `rabbitmq-server`
 1. Set `RABBIT_MQ_HOST`, `RABBIT_MQ_USERNAME`, `RABBIT_MQ_PASSWORD`
-1. Run `mpirun -n 4 polaris-worker --mpi` (You can specify the exp_key with --exp-key option)
+1. Run `mpirun -n 4 polaris-worker --mpi --exp-key this_is_test`
 1. Run codes as follows
 
 
@@ -75,10 +75,10 @@ if __name__ == '__main__':
         params.Bounds('lr', 0.001, 0.01),
         params.Bounds('weight_decay', 0.0002, 0.04),
     ]
-    trials = Trials(exp_key='this_is_test')
+    trials = Trials()
     polaris = Polaris(
             pseudo_train, bounds, 'bayesian_opt',
-            trials, max_evals=100)
+            trials, max_evals=100, exp_key='this_is_test')
     best_params = polaris.run_parallel()
     print(best_params)
 ```

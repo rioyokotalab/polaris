@@ -13,6 +13,8 @@ class JobClient():
 
     def __init__(self, polaris):
         self.polaris = polaris
+        self.exp_key = polaris.exp_key
+        self.logger = polaris.logger
         self.eval_count = 0
 
         if RABBITMQ_USERNAME and RABBITMQ_PASSWORD:
@@ -31,6 +33,10 @@ class JobClient():
         self.channel.queue_declare(queue='request_job_queue')
 
         self.callback_queue = result.method.queue
+        self.channel.queue_bind(
+                exchange='job_exchange',
+                queue='request_job_queue',
+                routing_key=f'request_{self.exp_key}')
         self.channel.basic_consume(
                 self.on_response, no_ack=True, queue=self.callback_queue)
         self.channel.basic_consume(
@@ -67,7 +73,7 @@ class JobClient():
 
         self.channel.basic_publish(
                 exchange='job_exchange',
-                routing_key=trials.exp_key,
+                routing_key=self.exp_key,
                 properties=pika.BasicProperties(
                     reply_to=self.callback_queue,
                     ),
@@ -82,13 +88,13 @@ class JobClient():
         del exp_result['params']
         del exp_result['eval_count']
 
-        self.polaris.trials.add(exp_result, params, eval_count)
+        self.polaris.trials.add(exp_result, params, eval_count, self.exp_key)
 
     def start(self):
-        print('Start parallel execution...')
+        self.logger.info('Start parallel execution...')
 
         try:
             self.send_job()
             self.channel.start_consuming()
         except pika.exceptions.ChannelClosed:
-            print('All jobs have finished')
+            self.logger.info('All jobs have finished')

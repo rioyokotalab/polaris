@@ -23,11 +23,11 @@ class TestPolaris(TestCase):
             params.Bounds('lr', 0.001, 0.01),
             params.Bounds('weight_decay', 0.0002, 0.04),
         ]
-        trials = Trials(exp_key='this_is_test')
+        trials = Trials()
         logger = logging.getLogger(__name__)
         polaris = Polaris(
                 pseudo_train, bounds, 'random',
-                trials, 100, logger)
+                trials, 100, logger, exp_key='this_is_test')
         best_params = polaris.run()
 
         self.assertGreater(best_params['lr'], 0.005)

@@ -7,7 +7,7 @@ from polaris.rabbitmq.worker import JobWorker
 
 parser = argparse.ArgumentParser(
         description='Start a job worker for polaris')
-parser.add_argument('--exp-key', '--e')
+parser.add_argument('--exp-key', '--e', required=True)
 parser.add_argument('--mpi', '--m', action='store_true')
 args = parser.parse_args()
 

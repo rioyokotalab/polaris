@@ -6,8 +6,7 @@ STATUS_SUCCESS = 2
 
 class Trials(object):
 
-    def __init__(self, exp_key=None):
-        self.exp_key = exp_key
+    def __init__(self):
         self.trials = []
         self.lowest_loss = np.inf
 
@@ -24,13 +23,13 @@ class Trials(object):
     def get_train_data(self):
         return self._train_x, self._train_y
 
-    def add(self, result, params, eval_count):
+    def add(self, result, params, eval_count, exp_key):
         loss = result.get('loss', np.inf)
 
         t = {
             'result': result,
             'loss': loss,
-            'exp_key': self.exp_key,
+            'exp_key': exp_key,
             'params': params,
             'eval_count': eval_count,
         }
