@@ -58,5 +58,5 @@ class Polaris(object):
 
     def run_parallel(self):
         job_client = JobClient(self)
-        job_client.run()
+        job_client.start()
         return self.trials.best_params

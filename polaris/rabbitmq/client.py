@@ -27,6 +27,7 @@ class JobClient():
 
         self.channel = self.connection.channel()
         result = self.channel.queue_declare(exclusive=True)
+        self.channel.queue_declare(queue='job_queue')
         self.channel.queue_declare(queue='request_job_queue')
 
         self.callback_queue = result.method.queue
@@ -83,7 +84,7 @@ class JobClient():
 
         self.polaris.trials.add(exp_result, params, eval_count)
 
-    def run(self):
+    def start(self):
         print('Start parallel execution...')
 
         try:
