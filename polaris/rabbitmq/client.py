@@ -4,6 +4,7 @@ import pika
 
 from polaris.rabbitmq.config import (
     RABBITMQ_HOST,
+    RABBITMQ_PORT,
     RABBITMQ_VIRTUAL_HOST,
     RABBITMQ_USERNAME,
     RABBITMQ_PASSWORD,
@@ -22,10 +23,12 @@ class JobClient():
                     RABBITMQ_USERNAME, RABBITMQ_PASSWORD)
             rabbitmq_params = pika.ConnectionParameters(
                     host=RABBITMQ_HOST,
+                    port=RABBITMQ_PORT,
                     virtual_host=RABBITMQ_VIRTUAL_HOST,
                     credentials=credentials)
         else:
             rabbitmq_params = pika.ConnectionParameters(
+                    host=RABBITMQ_HOST,
                     host=RABBITMQ_HOST,
                     virtual_host=RABBITMQ_VIRTUAL_HOST)
 
