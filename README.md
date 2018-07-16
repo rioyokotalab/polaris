@@ -26,7 +26,7 @@ $ pip install polaris
 from polaris import Polaris, STATUS_SUCCESS, Trials, params
 
 
-def pseudo_train(params):
+def pseudo_train(params, exp_info):
     lr_squared = (params['lr'] - 0.006) ** 2
     weight_decay_squared = (params['weight_decay'] - 0.02) ** 2
     loss = lr_squared + weight_decay_squared
