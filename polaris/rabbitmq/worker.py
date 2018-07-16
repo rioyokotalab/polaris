@@ -93,11 +93,16 @@ class JobWorker():
             self.comm.bcast(ctx, root=0)
 
         exp_result = self.run(ctx)
+        exp_payload = {
+            'exp_result': exp_result,
+            'params': ctx['params'],
+            'exp_info': ctx['exp_info'],
+        }
 
         ch.basic_publish(
                 exchange='',
                 routing_key=props.reply_to,
-                body=json.dumps(exp_result)
+                body=json.dumps(exp_payload)
                 )
         ch.basic_ack(delivery_tag=method.delivery_tag)
         self.request_job()
@@ -111,16 +116,18 @@ class JobWorker():
 
     def run(self, ctx):
         params = ctx['params']
-        eval_count = ctx['eval_count']
+        exp_info = ctx['exp_info']
+        fn_module = ctx['fn_module']
         fn_name = ctx['fn_name']
+        args = ctx['args']
 
         fn_params = copy.copy(params)
-        fn_params['eval_count'] = eval_count
-        fn_module = importlib.import_module(ctx['fn_module'])
+        fn_module = importlib.import_module(fn_module)
         fn = getattr(fn_module, fn_name)
 
-        exp_result = fn(fn_params)
-        exp_result['eval_count'] = eval_count
-        exp_result['params'] = params
+        if args is not None:
+            exp_result = fn(fn_params, exp_info, *args)
+        else:
+            exp_result = fn(fn_params, exp_info)
 
         return exp_result

@@ -10,7 +10,8 @@ class Polaris(object):
 
     def __init__(
             self, fn, bounds, algo, trials,
-            max_evals=10, exp_key=None, logger=None, debug=False):
+            max_evals=10, exp_key=None,
+            logger=None, debug=False, args=None):
         """
         Polaris base class.
 
@@ -27,7 +28,9 @@ class Polaris(object):
         logger : Logger
             user logger object
         debug : bool
--           make Polaris debug mode
+            make Polaris debug mode
+        args : tuple
+            args to pass fn
         """
 
         self.fn = fn
@@ -36,11 +39,15 @@ class Polaris(object):
         self.trials = trials
         self.max_evals = max_evals
         self.debug = debug
-
+        self.args = args
         if exp_key is None:
             self.exp_key = fn.__name__
         else:
             self.exp_key = exp_key
+        self.exp_info = {
+            'exp_key': exp_key,
+            'eval_count': 1,
+        }
 
         if logger is None:
             import logging
@@ -69,13 +76,19 @@ class Polaris(object):
         for eval_count in range(1, self.max_evals+1):
             params = self.domain.predict(self.trials)
             fn_params = copy.copy(params)
-            fn_params['eval_count'] = eval_count
-            exp_result = self.fn(fn_params)
-            self.trials.add(exp_result, params, eval_count, self.exp_key)
+
+            if self.args is not None:
+                exp_result = self.fn(fn_params, self.exp_info)
+            else:
+                exp_result = self.fn(fn_params, self.exp_info, *self.args)
+
+            self.trials.add(exp_result, params, self.exp_info)
+            self.exp_info['eval_count'] += 1
+
             self.logger.debug(fn_params)
 
-        with open(f'{self.exp_key}.p', mode='wb') as f:
-            pickle.dump(self.trials, f)
+            with open(f'{self.exp_key}.p', mode='wb') as f:
+                pickle.dump(self.trials, f)
 
         return self.trials.best_params
 

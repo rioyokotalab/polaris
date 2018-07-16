@@ -23,15 +23,15 @@ class Trials(object):
     def get_train_data(self):
         return self._train_x, self._train_y
 
-    def add(self, result, params, eval_count, exp_key):
+    def add(self, result, params, exp_info=None):
         loss = result.get('loss', np.inf)
 
         t = {
             'result': result,
             'loss': loss,
-            'exp_key': exp_key,
             'params': params,
-            'eval_count': eval_count,
+            'exp_key': exp_info['exp_key'],
+            'eval_count': exp_info['eval_count'],
         }
 
         if result['status'] == STATUS_SUCCESS:

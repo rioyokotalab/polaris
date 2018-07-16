@@ -15,7 +15,6 @@ class JobClient():
         self.polaris = polaris
         self.exp_key = polaris.exp_key
         self.logger = polaris.logger
-        self.eval_count = 0
 
         if RABBITMQ_USERNAME and RABBITMQ_PASSWORD:
             credentials = pika.PlainCredentials(
@@ -48,7 +47,10 @@ class JobClient():
         self.send_job()
 
     def send_job(self):
-        if self.eval_count >= self.polaris.max_evals:
+        eval_count = self.polaris.exp_info['eval_count']
+        max_evals = self.polaris.max_evals
+
+        if eval_count >= max_evals:
             self.connection.close()
 
         domain = self.polaris.domain
@@ -63,12 +65,12 @@ class JobClient():
             import __main__
             fn_module = __main__.__file__.replace('/', '.').replace('.py', '')
 
-        self.eval_count += 1
         ctx = {
-            'eval_count': self.eval_count,
-            'params': next_params,
             'fn_module': fn_module,
             'fn_name': fn_name,
+            'params': next_params,
+            'exp_info': self.polaris.exp_info,
+            'args': self.polaris.args,
         }
 
         self.channel.basic_publish(
@@ -80,15 +82,15 @@ class JobClient():
                 body=json.dumps(ctx)
                 )
 
+        self.polaris.exp_info['eval_count'] += 1
+
     def on_response(self, ch, method, props, body):
-        exp_result = json.loads(body)
-        params = exp_result['params']
-        eval_count = exp_result['eval_count']
+        exp_payload = json.loads(body)
+        exp_result = exp_payload['exp_result']
+        params = exp_payload['params']
+        exp_info = exp_payload['exp_info']
 
-        del exp_result['params']
-        del exp_result['eval_count']
-
-        self.polaris.trials.add(exp_result, params, eval_count, self.exp_key)
+        self.polaris.trials.add(exp_result, params, exp_info)
 
     def start(self):
         self.logger.info('Start parallel execution...')
