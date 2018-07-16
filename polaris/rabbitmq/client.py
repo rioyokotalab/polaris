@@ -39,17 +39,17 @@ class JobClient():
         self.channel.queue_declare(queue='job_queue')
         self.channel.queue_declare(queue='request_job_queue')
 
-        self.callback_queue = result.method.queue
+        self.channel.exchange_declare(
+                exchange='job_exchange', exchange_type='direct')
         self.channel.queue_bind(
                 exchange='job_exchange',
                 queue='request_job_queue',
                 routing_key=f'request_{self.exp_key}')
+        self.callback_queue = result.method.queue
         self.channel.basic_consume(
                 self.on_response, no_ack=True, queue=self.callback_queue)
         self.channel.basic_consume(
                 self.on_request, no_ack=True, queue='request_job_queue')
-        self.channel.exchange_declare(
-                exchange='job_exchange', exchange_type='direct')
 
     def on_request(self, ch, method, props, body):
         self.send_job()
