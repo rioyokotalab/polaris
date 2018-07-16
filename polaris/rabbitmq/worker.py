@@ -1,7 +1,6 @@
-import argparse
 import copy
 import importlib
-import json
+import pickle
 
 import pika
 
@@ -86,7 +85,7 @@ class JobWorker():
                 MPI.Finalize()
 
     def on_request(self, ch, method, props, body):
-        ctx = json.loads(body)
+        ctx = pickle.loads(body)
         self.logger.info(ctx)
 
         if self.use_mpi:
@@ -102,7 +101,7 @@ class JobWorker():
         ch.basic_publish(
                 exchange='',
                 routing_key=props.reply_to,
-                body=json.dumps(exp_payload)
+                body=pickle.dumps(exp_payload)
                 )
         ch.basic_ack(delivery_tag=method.delivery_tag)
         self.request_job()

@@ -1,4 +1,4 @@
-import json
+import pickle
 
 import pika
 
@@ -79,13 +79,13 @@ class JobClient():
                 properties=pika.BasicProperties(
                     reply_to=self.callback_queue,
                     ),
-                body=json.dumps(ctx)
+                body=pickle.dumps(ctx)
                 )
 
         self.polaris.exp_info['eval_count'] += 1
 
     def on_response(self, ch, method, props, body):
-        exp_payload = json.loads(body)
+        exp_payload = pickle.loads(body)
         exp_result = exp_payload['exp_result']
         params = exp_payload['params']
         exp_info = exp_payload['exp_info']

@@ -9,17 +9,14 @@ from chainer.training import triggers
 from chainer.datasets import TransformDataset, get_cifar10
 from chainercv import transforms
 import chainermn
-from comet_ml import Experiment
 
 import cv2 as cv
-from hyperopt import STATUS_OK, STATUS_FAIL
 from mpi4py import MPI
 import numpy as np
+from polaris import STATUS_SUCCESS, STATUS_FAILURE
 
 import models.resnet50
 import models.lenet5
-
-from utils import get_mongo_trials
 
 OPTIMIZERS = {
     'momentum_sgd': chainer.optimizers.MomentumSGD,
@@ -30,6 +27,13 @@ ARCHS = {
     'lenet5': models.lenet5.LeNet5,
     'resnet50': models.resnet50.ResNet50,
 }
+
+
+OMIT_ARG_PARAMS = [
+    'lr_decay_rate',
+    'lr_decay_epoch',
+    'weight_decay',
+]
 
 mpi_comm = MPI.COMM_WORLD
 
@@ -76,52 +80,51 @@ def transform(
     return img, label
 
 
-def run(params, options):
-    job_name = options['exp_key']
-
-    random.seed(options.seed)
-    np.random.seed(options.seed)
-    chainer.cuda.cupy.random.seed(options.seed)
+def run(params, exp_info, args):
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    chainer.cuda.cupy.random.seed(args.seed)
 
     # Prepare ChainerMN communicator.
-    if options.communicator == 'naive':
+    if args.communicator == 'naive':
         print("Error: 'naive' communicator does not support GPU.\n")
         exit(-1)
 
-    comm = chainermn.create_communicator(options.communicator, mpi_comm)
+    comm = chainermn.create_communicator(args.communicator, mpi_comm)
     device = comm.intra_rank
 
     if comm.rank == 0:
         print('==========================================')
+        print('Experiment Info: {}'.format(exp_info))
         print('Num process (COMM_WORLD): {}'.format(comm.size))
         print('Using GPUs')
-        print('Using {} communicator'.format(options.communicator))
-        print('Num Minibatch-size: {}'.format(options.batchsize))
-        print('Num epoch: {}'.format(options.epoch))
+        print('Using {} communicator'.format(args.communicator))
+        print('Num Minibatch-size: {}'.format(args.batchsize))
+        print('Num epoch: {}'.format(args.epoch))
         print('==========================================')
 
     # Set up a neural network to train.
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
     class_labels = 10
-    model = L.Classifier(ARCHS[options.arch](class_labels))
+    model = L.Classifier(ARCHS[args.arch](class_labels))
     if device >= 0:
         chainer.cuda.get_device_from_id(device).use()
         model.to_gpu()
 
     arg_params = {i: params[i] for i in params if i not in OMIT_ARG_PARAMS}
     optimizer = chainermn.create_multi_node_optimizer(
-            OPTIMIZERS[options.optimizer_name](**arg_params), comm)
+            OPTIMIZERS[args.optimizer_name](**arg_params), comm)
     optimizer.setup(model)
     optimizer.add_hook(
             chainer.optimizer_hooks.WeightDecay(params['weight_decay']))
 
     stop_trigger = (['epoch'], 'epoch')
     # Early stopping option
-    if options.early_stopping:
+    if args.early_stopping:
         stop_trigger = triggers.EarlyStoppingTrigger(
-            monitor=options.early_stopping, verbose=True,
-            max_trigger=(options.epoch, 'epoch'))
+            monitor=args.early_stopping, verbose=True,
+            max_trigger=(args.epoch, 'epoch'))
 
     if comm.rank == 0:
         train, valid = get_cifar10(scale=255.)
@@ -135,20 +138,20 @@ def run(params, options):
     std = mpi_comm.bcast(std, root=0)
 
     train_transform = partial(
-        transform, mean=mean, std=std, random_angle=options.random_angle,
-        pca_sigma=options.pca_sigma, expand_ratio=options.expand_ratio,
-        crop_size=options.crop_size, train=True)
+        transform, mean=mean, std=std, random_angle=args.random_angle,
+        pca_sigma=args.pca_sigma, expand_ratio=args.expand_ratio,
+        crop_size=args.crop_size, train=True)
     valid_transform = partial(transform, mean=mean, std=std, train=False)
     train = TransformDataset(train, train_transform)
     valid = TransformDataset(valid, valid_transform)
 
-    train_iter = chainer.iterators.SerialIterator(train, options.batchsize)
-    test_iter = chainer.iterators.SerialIterator(valid, options.batchsize,
+    train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
+    test_iter = chainer.iterators.SerialIterator(valid, args.batchsize,
                                                  repeat=False, shuffle=True)
 
     updater = training.StandardUpdater(train_iter, optimizer, device=device)
     trainer = training.Trainer(
-            updater, stop_trigger, out=options.out)
+            updater, stop_trigger, out=args.out)
     # Create a multi node evaluator from a standard Chainer evaluator.
     evaluator = extensions.Evaluator(test_iter, model, device=device)
     evaluator = chainermn.create_multi_node_evaluator(evaluator, comm)
@@ -164,7 +167,7 @@ def run(params, options):
              'main/accuracy', 'validation/main/accuracy', 'elapsed_time']))
         trainer.extend(extensions.ProgressBar())
 
-    if options.optimizer_name != 'adam':
+    if args.optimizer_name != 'adam':
         trainer.extend(extensions.ExponentialShift(
             'lr', params['lr_decay_rate']),
             trigger=(params['lr_decay_epoch'], 'epoch'))
@@ -172,17 +175,16 @@ def run(params, options):
     # Run the training
     trainer.run()
 
-    print('Done')
-    print('')
+    print('========== Done ===========')
 
     loss = trainer.observation['validation/main/loss']
 
     if comm.rank != 0 or np.isnan(loss):
         return {
-            'status': STATUS_FAIL
+            'status': STATUS_FAILURE
         }
     else:
         return {
             'loss': loss,
-            'status': STATUS_OK
+            'status': STATUS_SUCCESS
         }
