@@ -20,7 +20,7 @@ $ pip install polaris
 
 ## Examples
 
-### Sequential Exection
+### Sequential Execution
 
 ```python
 from polaris import Polaris, STATUS_SUCCESS, Trials, params
