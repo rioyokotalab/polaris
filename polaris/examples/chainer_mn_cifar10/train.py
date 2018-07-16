@@ -36,7 +36,6 @@ if __name__ == '__main__':
     parser.add_argument('--communicator', type=str, default='pure_nccl')
     parser.add_argument('--epoch', '-e', type=int, default=250)
     parser.add_argument('--out', '-o', default='result')
-    parser.add_argument('--early_stopping', type=str)
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--optimizer_name', type=str)
 
@@ -49,7 +48,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     bounds = BOUNDS[args.optimizer_name]
 
-    job_name = f'{args.arch}_cifar10_{args.optimizer_name}'
+    job_name = f'cifar10_mn_example'
     trials = Trials()
 
     polaris = Polaris(

@@ -5,7 +5,6 @@ import chainer
 import chainer.links as L
 from chainer import training
 from chainer.training import extensions
-from chainer.training import triggers
 from chainer.datasets import TransformDataset, get_cifar10
 from chainercv import transforms
 import chainermn
@@ -119,13 +118,6 @@ def run(params, exp_info, args):
     optimizer.add_hook(
             chainer.optimizer_hooks.WeightDecay(params['weight_decay']))
 
-    stop_trigger = (['epoch'], 'epoch')
-    # Early stopping option
-    if args.early_stopping:
-        stop_trigger = triggers.EarlyStoppingTrigger(
-            monitor=args.early_stopping, verbose=True,
-            max_trigger=(args.epoch, 'epoch'))
-
     if comm.rank == 0:
         train, valid = get_cifar10(scale=255.)
         mean = np.mean([x for x, _ in train], axis=(0, 2, 3))
@@ -150,8 +142,8 @@ def run(params, exp_info, args):
                                                  repeat=False, shuffle=True)
 
     updater = training.StandardUpdater(train_iter, optimizer, device=device)
-    trainer = training.Trainer(
-            updater, stop_trigger, out=args.out)
+    stop_trigger = (args.epoch, 'epoch')
+    trainer = training.Trainer(updater, stop_trigger, out=args.out)
     # Create a multi node evaluator from a standard Chainer evaluator.
     evaluator = extensions.Evaluator(test_iter, model, device=device)
     evaluator = chainermn.create_multi_node_evaluator(evaluator, comm)
