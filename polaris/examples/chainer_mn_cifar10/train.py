@@ -39,7 +39,6 @@ if __name__ == '__main__':
     parser.add_argument('--early_stopping', type=str)
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--optimizer_name', type=str)
-    parser.add_argument('--use_mongo', action='store_true')
 
     # Data augmentation settings
     parser.add_argument('--random_angle', type=float, default=15.0)
