@@ -29,7 +29,7 @@ class JobClient():
         else:
             rabbitmq_params = pika.ConnectionParameters(
                     host=RABBITMQ_HOST,
-                    host=RABBITMQ_HOST,
+                    port=RABBITMQ_PORT,
                     virtual_host=RABBITMQ_VIRTUAL_HOST)
 
         self.connection = pika.BlockingConnection(rabbitmq_params)
