@@ -167,16 +167,16 @@ def run(params, exp_info, args):
     # Run the training
     trainer.run()
 
-    print('========== Done ===========')
+    if comm.rank == 0:
+        print('========== Done ===========')
 
-    loss = trainer.observation['validation/main/loss']
-
-    if comm.rank != 0 or np.isnan(loss):
-        return {
-            'status': STATUS_FAILURE
-        }
-    else:
-        return {
-            'loss': loss,
-            'status': STATUS_SUCCESS
-        }
+        loss = trainer.observation['validation/main/loss']
+        if np.isnan(loss):
+            return {
+                'status': STATUS_FAILURE
+            }
+        else:
+            return {
+                'loss': loss,
+                'status': STATUS_SUCCESS
+            }

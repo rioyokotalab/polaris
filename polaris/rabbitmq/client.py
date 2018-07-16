@@ -58,7 +58,7 @@ class JobClient():
         eval_count = self.polaris.exp_info['eval_count']
         max_evals = self.polaris.max_evals
 
-        if eval_count >= max_evals:
+        if eval_count > max_evals:
             self.connection.close()
 
         domain = self.polaris.domain
