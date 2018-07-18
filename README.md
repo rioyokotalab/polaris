@@ -17,7 +17,7 @@ We plan to support every state-of-art tuning method as follows.
 
 ```shell
 $ brew install rabbitmq
-$ pip install polaris
+$ pip install polaris-py
 ```
 
 ## Examples
