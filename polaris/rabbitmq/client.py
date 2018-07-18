@@ -99,6 +99,9 @@ class JobClient():
 
         self.polaris.trials.add(exp_result, params, exp_info)
 
+        with open(f'{self.exp_key}.p', mode='wb') as f:
+            pickle.dump(self.trials, f)
+
     def start(self):
         self.logger.info('Start parallel execution...')
 
