@@ -10,7 +10,7 @@ class Polaris(object):
 
     def __init__(
             self, fn, bounds, algo, trials,
-            max_evals=10, exp_key=None,
+            max_evals=10, min_ei=1e-05, exp_key=None,
             logger=None, debug=False, args=None):
         """
         Polaris base class.
@@ -38,6 +38,7 @@ class Polaris(object):
         self.algo = algo
         self.trials = trials
         self.max_evals = max_evals
+        self.min_ei = min_ei
         self.debug = debug
         self.args = args
         if exp_key is None:
@@ -74,7 +75,10 @@ class Polaris(object):
 
         self.logger.info('Start searching...')
         for eval_count in range(1, self.max_evals+1):
-            params = self.domain.predict(self.trials)
+            params = self.domain.predict(self.trials, self.min_ei)
+            if params is None:
+                break
+
             fn_params = copy.copy(params)
 
             if self.args is not None:

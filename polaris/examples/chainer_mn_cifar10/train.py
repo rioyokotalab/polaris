@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     polaris = Polaris(
             optimizer.run, bounds, 'bayesian_opt',
-            trials, max_evals=100, exp_key=job_name, args=(args,))
+            trials, max_evals=5, exp_key=job_name, args=(args,))
 
     best_params = polaris.run_parallel()
     print(best_params)
