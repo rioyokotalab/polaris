@@ -106,7 +106,6 @@ class JobClient():
         self.logger.info('Start parallel execution...')
 
         try:
-            self.send_job()
             self.channel.start_consuming()
         except (pika.exceptions.ChannelClosed, KeyboardInterrupt):
             self.logger.info('All jobs have finished')
