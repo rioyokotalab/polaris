@@ -1,7 +1,7 @@
 import warnings
 
 from .polaris import Polaris
-from .params import Bounds
+from .params import Bounds, Domain
 from .trials import Trials, STATUS_SUCCESS, STATUS_FAILURE
 
 warnings.simplefilter("ignore", UserWarning)

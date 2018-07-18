@@ -1,20 +1,20 @@
 import copy
 import pickle
-import os
 
 from polaris.params import Domain
 from polaris.rabbitmq import JobClient
 
 
 class Polaris(object):
+    """
+    A client for the Polaris.
+    """
 
     def __init__(
             self, fn, bounds, algo, trials,
             max_evals=10, min_ei=1e-05, exp_key=None,
             logger=None, debug=False, args=None):
         """
-        A client for the Polaris.
-
         Parameters
         ----------
         fn : callable

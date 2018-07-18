@@ -12,18 +12,17 @@ from polaris.rabbitmq.config import (
 
 
 class JobClient():
+    """
+    A client class for parallel experiments.
+
+    The instance of this class send a new job to workers and
+    calculate next parameters in response to the requsest from a worker.
+
+    This client adopt the RPC pattern.
+    Therefore all results will be accumulated on client side.
+    """
 
     def __init__(self, polaris):
-        """
-        A client class for parallel experiments.
-
-        The instance of this class send a new job to workers and
-        calculate next parameters in response to the requsest from a worker.
-
-        This client adopt the RPC pattern.
-        Therefore all results will be accumulated on client side.
-        """
-
         self.polaris = polaris
         self.exp_key = polaris.exp_key
         self.logger = polaris.logger

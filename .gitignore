@@ -3,3 +3,5 @@ dist/
 polaris.egg-info/
 __pycache__/
 *.p
+.DS_Store
+_build

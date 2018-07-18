@@ -5,12 +5,11 @@ STATUS_SUCCESS = 2
 
 
 class Trials(object):
+    """
+    A class for storing trials data.
+    """
 
     def __init__(self):
-        """
-        A class for storing trials data.
-        """
-
         self.trials = []
         self.lowest_loss = np.inf
 
@@ -25,9 +24,19 @@ class Trials(object):
         return len(self.trials)
 
     def get_train_data(self):
+        """
+        A method to get train data.
+        The train data is arranged in alphabetical order of
+        the name of parameters.
+        """
+
         return self._train_x, self._train_y
 
     def add(self, result, params, exp_info=None):
+        """
+        A method to add each trial result
+        """
+
         loss = result.get('loss', np.inf)
 
         t = {

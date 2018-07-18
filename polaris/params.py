@@ -25,12 +25,11 @@ class Bounds:
 
 
 class Domain:
+    """
+    A class to store bounds and searching new parameters.
+    """
 
     def __init__(self, bounds, algo='random'):
-        """
-        A class to store bounds and searching new parameters.
-        """
-
         self.n_params = len(bounds)
         self._algo = algo
         self._bounds = sorted(bounds, key=lambda b: b.label)
