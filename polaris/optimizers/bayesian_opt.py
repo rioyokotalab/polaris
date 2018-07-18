@@ -40,14 +40,15 @@ def calc_next_params(domain, trials, min_ei):
 
     best_x = None
     best_ei = 0.0
+    n_iter = 400
 
-    for _ in range(0, 100):
+    for _ in range(0, n_iter):
         minimize_result = minimize(
                 fun=expected_improvement,
                 x0=domain.random(),
                 bounds=domain.bounds,
                 method='L-BFGS-B',
-                args=(model, lowest_loss)
+                args=(model, lowest_loss),
                 )
         ei = -minimize_result.fun
         if ei > best_ei:
