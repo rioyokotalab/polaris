@@ -171,6 +171,8 @@ def run(params, exp_info, args):
         print('========== Done ===========')
 
         loss = trainer.observation['validation/main/loss']
+        loss = chainer.cuda.to_cpu(loss)
+
         if np.isnan(loss):
             return {
                 'status': STATUS_FAILURE
