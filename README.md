@@ -54,14 +54,14 @@ if __name__ == '__main__':
 #### Single Process
 
 1. Run `rabbitmq-server`
-1. Set `RABBIT_MQ_HOST`, `RABBIT_MQ_USERNAME`, `RABBIT_MQ_PASSWORD`
+1. Set `RABBITMQ_URL` (ampq://guest:guest@localhost//)
 1. Run `polaris-worker --exp-key this_is_test`
 1. Run codes as follows
 
 ### Multiple Processes (Use MPI)
 
 1. Run `rabbitmq-server`
-1. Set `RABBIT_MQ_HOST`, `RABBIT_MQ_USERNAME`, `RABBIT_MQ_PASSWORD`
+1. Set `RABBITMQ_URL` (ampq://guest:guest@localhost//)
 1. Run `mpirun -n 4 polaris-worker --mpi --exp-key this_is_test`
 1. Run codes as follows
 

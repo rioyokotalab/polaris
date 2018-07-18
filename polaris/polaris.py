@@ -13,7 +13,7 @@ class Polaris(object):
             max_evals=10, min_ei=1e-05, exp_key=None,
             logger=None, debug=False, args=None):
         """
-        Polaris base class.
+        A client for the Polaris.
 
         Parameters
         ----------
@@ -25,6 +25,12 @@ class Polaris(object):
             search algorithms (random, tpe, bayesian)
         trials : polaris.trials
             trials object which store all parameters of trials
+        max_evals : int
+            the maximum number of evaluations
+        min_ei : int
+            the minimum expected improvement to continue experiments
+        exp_key : str
+            the expriment key to distinguish each experiments
         logger : Logger
             user logger object
         debug : bool
@@ -70,7 +76,8 @@ class Polaris(object):
 
     def run(self):
         """
-        Start evaluation up to max_evals count
+        Run an experiment sequentially with one process up to max_evals count.
+        The expriment will early stop, if params become None
         """
 
         self.logger.info('Start searching...')
@@ -97,6 +104,13 @@ class Polaris(object):
         return self.trials.best_params
 
     def run_parallel(self):
+        """
+        Run an experiment in parallel.
+
+        Polaris use RabbitMQ to pass arguments from client to worker.
+        You need to start at least one worker to start an experiment.
+        """
+
         job_client = JobClient(self)
         job_client.start()
         return self.trials.best_params

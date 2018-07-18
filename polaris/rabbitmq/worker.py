@@ -15,6 +15,16 @@ from polaris.rabbitmq.config import (
 
 class JobWorker():
     def __init__(self, args, logger=None, debug=False):
+        """
+        A worker class for parallel experiments.
+
+        You can start the worker like below.
+        `polaris-worker --exp-key this_is_test`
+
+        And if you want to run this worker on multi node environment,
+        you have to add `--mpi` flag.
+        """
+
         self.exp_key = args.exp_key
         self.use_mpi = args.mpi
         self.debug = debug

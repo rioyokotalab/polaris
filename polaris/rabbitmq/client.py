@@ -14,6 +14,16 @@ from polaris.rabbitmq.config import (
 class JobClient():
 
     def __init__(self, polaris):
+        """
+        A client class for parallel experiments.
+
+        The instance of this class send a new job to workers and
+        calculate next parameters in response to the requsest from a worker.
+
+        This client adopt the RPC pattern.
+        Therefore all results will be accumulated on client side.
+        """
+
         self.polaris = polaris
         self.exp_key = polaris.exp_key
         self.logger = polaris.logger
@@ -50,6 +60,11 @@ class JobClient():
                 self.on_request, no_ack=True, queue=self.request_queue_name)
 
     def on_request(self, ch, method, props, body):
+        """
+        A method to receive job request from workers
+        After receiving request, this method will send a job to them.
+        """
+
         self.send_job()
 
     def send_job(self):
@@ -92,6 +107,10 @@ class JobClient():
         self.polaris.exp_info['eval_count'] += 1
 
     def on_response(self, ch, method, props, body):
+        """
+        A method to receive the result of experiment from workers.
+        """
+
         exp_payload = pickle.loads(body)
         exp_result = exp_payload['exp_result']
         params = exp_payload['params']
@@ -103,6 +122,10 @@ class JobClient():
             pickle.dump(self.polaris.trials, f)
 
     def start(self):
+        """
+        A method to start consuming job requests.
+        """
+
         self.logger.info('Start parallel execution...')
 
         try:

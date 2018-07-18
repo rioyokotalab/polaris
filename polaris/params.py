@@ -9,6 +9,10 @@ OPTIMIZERS = {
 
 
 class Bounds:
+    """
+    A class to declare range of each hyperparameters.
+    For now, Polaris do not adapt to category variable.
+    """
 
     def __init__(self, label, low, high, q=None):
         self.label = label
@@ -23,6 +27,10 @@ class Bounds:
 class Domain:
 
     def __init__(self, bounds, algo='random'):
+        """
+        A class to store bounds and searching new parameters.
+        """
+
         self.n_params = len(bounds)
         self._algo = algo
         self._bounds = sorted(bounds, key=lambda b: b.label)

@@ -7,6 +7,10 @@ STATUS_SUCCESS = 2
 class Trials(object):
 
     def __init__(self):
+        """
+        A class for storing trials data.
+        """
+
         self.trials = []
         self.lowest_loss = np.inf
 
