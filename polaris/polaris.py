@@ -98,7 +98,7 @@ class Polaris(object):
 
             self.logger.debug(fn_params)
 
-            with open(f'{self.exp_key}.p', mode='wb') as f:
+            with open('%s.p' % self.exp_key, mode='wb') as f:
                 pickle.dump(self.trials, f)
 
         return self.trials.best_params
