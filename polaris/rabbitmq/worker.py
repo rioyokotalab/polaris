@@ -75,6 +75,8 @@ class JobWorker():
 
                 self.logger.info('Waiting for new job...')
 
+                self.request_job()
+
                 self.channel.start_consuming()
             else:
                 while True:
