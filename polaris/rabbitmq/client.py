@@ -39,8 +39,9 @@ class JobClient():
 
         self.channel = self.connection.channel()
         result = self.channel.queue_declare(exclusive=True)
-        self.channel.queue_declare(queue=self.job_queue_name)
-        self.channel.queue_declare(queue=self.request_queue_name)
+        self.channel.queue_declare(
+                queue=self.request_queue_name, auto_delete=True)
+        self.channel.queue_declare(queue=self.job_queue_name, auto_delete=True)
 
         self.callback_queue = result.method.queue
         self.channel.basic_consume(
@@ -104,6 +105,4 @@ class JobClient():
             self.send_job()
             self.channel.start_consuming()
         except (pika.exceptions.ChannelClosed, KeyboardInterrupt):
-            self.channel.queue_delete(queue=self.request_queue_name)
-            self.channel.queue_delete(queue=self.job_queue_name)
             self.logger.info('All jobs have finished')

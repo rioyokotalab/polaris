@@ -56,8 +56,9 @@ class JobWorker():
             self.logger = logger
 
         self.channel = self.connection.channel()
-        self.channel.queue_declare(queue=self.request_queue_name)
-        self.channel.queue_declare(queue=self.job_queue_name)
+        self.channel.queue_declare(
+                queue=self.request_queue_name, auto_delete=True)
+        self.channel.queue_declare(queue=self.job_queue_name, auto_delete=True)
 
         if self.use_mpi:
             from mpi4py import MPI
@@ -73,7 +74,6 @@ class JobWorker():
                         self.on_request, queue=self.job_queue_name)
 
                 self.logger.info('Waiting for new job...')
-                self.request_job()
 
                 self.channel.start_consuming()
             else:
