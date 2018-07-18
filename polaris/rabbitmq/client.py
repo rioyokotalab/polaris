@@ -117,7 +117,7 @@ class JobClient():
 
         self.polaris.trials.add(exp_result, params, exp_info)
 
-        with open('%s.p' % self.exp_key, mode='wb') as f:
+        with open(f'{self.exp_key}.p', mode='wb') as f:
             pickle.dump(self.polaris.trials, f)
 
     def start(self):
