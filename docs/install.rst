@@ -4,7 +4,7 @@ Installation
 
 .. code-block:: shell
 
-	$ pip install polaris
+	$ pip install polaris-py
 
 If you want to run RabbitMQ on local.
 You should install rabbimq
