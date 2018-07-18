@@ -8,7 +8,7 @@ def get_long_description():
 
 
 setup(
-    name='polaris',
+    name='polaris-py',
     packages=find_packages(),
     scripts=['bin/polaris-worker'],
     version='0.1',
@@ -27,7 +27,7 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
         'Operating System :: Unix',
-        'Programming Language :: Python :: 3'
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6'
         ],
     platforms=['Linux', 'OS-X'],
