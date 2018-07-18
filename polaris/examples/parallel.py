@@ -1,11 +1,11 @@
-from polaris import Polaris, STATUS_SUCCESS, Trials, params
+from polaris import Polaris, STATUS_SUCCESS, Trials, Bounds
 from polaris.examples.utils import pseudo_train
 
 
 if __name__ == '__main__':
     bounds = [
-        params.Bounds('lr', 0.001, 0.01),
-        params.Bounds('weight_decay', 0.0002, 0.04),
+        Bounds('lr', 0.001, 0.01),
+        Bounds('weight_decay', 0.0002, 0.04),
     ]
     trials = Trials()
     polaris = Polaris(

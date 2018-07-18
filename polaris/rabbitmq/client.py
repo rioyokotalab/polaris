@@ -18,6 +18,9 @@ class JobClient():
         self.exp_key = polaris.exp_key
         self.logger = polaris.logger
 
+        self.job_queue_name = f'job_{self.exp_key}'
+        self.request_queue_name = f'request_{self.exp_key}'
+
         if RABBITMQ_USERNAME and RABBITMQ_PASSWORD:
             credentials = pika.PlainCredentials(
                     RABBITMQ_USERNAME, RABBITMQ_PASSWORD)
@@ -36,20 +39,14 @@ class JobClient():
 
         self.channel = self.connection.channel()
         result = self.channel.queue_declare(exclusive=True)
-        self.channel.queue_declare(queue='job_queue')
-        self.channel.queue_declare(queue='request_job_queue')
+        self.channel.queue_declare(queue=self.job_queue_name)
+        self.channel.queue_declare(queue=self.request_queue_name)
 
-        self.channel.exchange_declare(
-                exchange='job_exchange', exchange_type='direct')
-        self.channel.queue_bind(
-                exchange='job_exchange',
-                queue='request_job_queue',
-                routing_key=f'request_{self.exp_key}')
         self.callback_queue = result.method.queue
         self.channel.basic_consume(
                 self.on_response, no_ack=True, queue=self.callback_queue)
         self.channel.basic_consume(
-                self.on_request, no_ack=True, queue='request_job_queue')
+                self.on_request, no_ack=True, queue=self.request_queue_name)
 
     def on_request(self, ch, method, props, body):
         self.send_job()
@@ -82,8 +79,8 @@ class JobClient():
         }
 
         self.channel.basic_publish(
-                exchange='job_exchange',
-                routing_key=self.exp_key,
+                exchange='',
+                routing_key=self.job_queue_name,
                 properties=pika.BasicProperties(
                     reply_to=self.callback_queue,
                     ),

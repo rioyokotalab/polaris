@@ -19,6 +19,9 @@ class JobWorker():
         self.use_mpi = args.mpi
         self.debug = debug
 
+        self.job_queue_name = f'job_{self.exp_key}'
+        self.request_queue_name = f'request_{self.exp_key}'
+
         if RABBITMQ_USERNAME and RABBITMQ_PASSWORD:
             credentials = pika.PlainCredentials(
                     RABBITMQ_USERNAME, RABBITMQ_PASSWORD)
@@ -53,10 +56,8 @@ class JobWorker():
             self.logger = logger
 
         self.channel = self.connection.channel()
-        self.channel.queue_declare(queue='job_queue')
-
-        self.channel.exchange_declare(
-                exchange='job_exchange', exchange_type='direct')
+        self.channel.queue_declare(queue=self.request_queue_name)
+        self.channel.queue_declare(queue=self.job_queue_name)
 
         if self.use_mpi:
             from mpi4py import MPI
@@ -68,12 +69,8 @@ class JobWorker():
             if (not self.use_mpi) or self.rank == 0:
                 self.channel.basic_qos(prefetch_count=1)
 
-                self.channel.queue_bind(
-                        exchange='job_exchange',
-                        queue='job_queue',
-                        routing_key=self.exp_key)
-
-                self.channel.basic_consume(self.on_request, queue='job_queue')
+                self.channel.basic_consume(
+                        self.on_request, queue=self.job_queue_name)
 
                 self.logger.info('Waiting for new job...')
                 self.request_job()
@@ -107,17 +104,17 @@ class JobWorker():
         }
 
         ch.basic_publish(
-                exchange='',
-                routing_key=props.reply_to,
-                body=pickle.dumps(exp_payload)
-                )
+            exchange='',
+            routing_key=props.reply_to,
+            body=pickle.dumps(exp_payload)
+        )
         ch.basic_ack(delivery_tag=method.delivery_tag)
         self.request_job()
 
     def request_job(self):
         self.channel.basic_publish(
-                exchange='job_exchange',
-                routing_key=f'request_{self.exp_key}',
+                exchange='',
+                routing_key=self.request_queue_name,
                 body=''
             )
 
