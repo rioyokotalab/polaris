@@ -17,7 +17,7 @@ def objective_function(x, l, g):
 def trunc_range(a, b, m, s):
     # ref. https://docs.scipy.org/doc/scipy/reference/
     #      generated/scipy.stats.truncnorm.html
-    return (a-m) / s, (b-m) / s
+    return (a - m) / s, (b - m) / s
 
 
 def minimize(
