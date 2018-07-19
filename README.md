@@ -7,7 +7,7 @@ We plan to support every state-of-art tuning method as follows.
 
 -  Random Search
 -  Bayesian Optimization
--  Tree of Parzen Estimators (TPE)
+-  Tree-structured Parzen Estimators (TPE)
 
 ## Prerequisites
 - Python >= 3.6
