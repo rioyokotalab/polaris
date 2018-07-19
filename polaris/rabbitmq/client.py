@@ -64,7 +64,7 @@ class JobClient():
         After receiving request, this method will send a job to them.
         """
 
-        eval_count = self.polaris.exp_info['eval_count']
+        eval_count = len(self.polaris.trials)
         max_evals = self.polaris.max_evals
 
         if eval_count > max_evals is None:
