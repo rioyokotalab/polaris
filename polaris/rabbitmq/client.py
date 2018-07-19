@@ -64,12 +64,6 @@ class JobClient():
         After receiving request, this method will send a job to them.
         """
 
-        eval_count = len(self.polaris.trials)
-        max_evals = self.polaris.max_evals
-
-        if eval_count > max_evals is None:
-            self.connection.close()
-
         self.send_job()
 
     def send_job(self):
@@ -77,6 +71,13 @@ class JobClient():
         domain = self.polaris.domain
         trials = self.polaris.trials
         min_ei = self.polaris.min_ei
+
+        eval_count = self.polaris.exp_info['eval_count']
+        max_evals = self.polaris.max_evals
+
+        if eval_count > max_evals:
+            return
+
         next_params = domain.predict(trials, min_ei)
 
         fn = self.polaris.fn
@@ -120,6 +121,12 @@ class JobClient():
 
         with open(f'{self.exp_key}.p', mode='wb') as f:
             pickle.dump(self.polaris.trials, f)
+
+        eval_count = len(self.polaris.trials)
+        max_evals = self.polaris.max_evals
+
+        if eval_count >= max_evals:
+            self.connection.close()
 
     def start(self):
         """
