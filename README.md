@@ -2,7 +2,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/polaris/badge/?version=latest)](https://polaris.readthedocs.io/en/latest/?badge=latest)
 
-Polaris is a hyperparamter tuning library focusing on reducing time.  
+Polaris is a hyperparamter optimization library focusing on reducing time.  
 We plan to support every state-of-art tuning method as follows.
 
 -  Random Search
