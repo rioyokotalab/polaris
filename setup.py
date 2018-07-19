@@ -37,7 +37,6 @@ setup(
         'scikit-learn',
         'scipy',
         'pika',
-        'mpi4py',
         'statsmodels',
         'matplotlib',
     ],
