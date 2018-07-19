@@ -53,7 +53,7 @@ class Polaris(object):
             self.exp_key = exp_key
         self.exp_info = {
             'exp_key': exp_key,
-            'eval_count': 1,
+            'eval_count': len(trials) + 1,
         }
 
         if logger is None:
@@ -81,7 +81,7 @@ class Polaris(object):
         """
 
         self.logger.info('Start searching...')
-        for eval_count in range(1, self.max_evals+1):
+        for eval_count in range(self.exp_info['eval_count'], self.max_evals+1):
             params = self.domain.predict(self.trials, self.min_ei)
             if params is None:
                 break
