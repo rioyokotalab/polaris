@@ -11,7 +11,7 @@ setup(
     name='polaris-py',
     packages=find_packages(),
     scripts=['bin/polaris-worker'],
-    version='0.35',
+    version='0.40',
     author='Shun Iwase, Linsho Kaku',
     author_email='s@sh8.io, kaku.l.aa@rio.gsic.titech.ac.jp',
     description='Polaris is a hyperparamter tuning \
