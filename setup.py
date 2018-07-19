@@ -13,7 +13,7 @@ setup(
     scripts=['bin/polaris-worker'],
     version='0.2',
     author='Shun Iwase, Linsho Kaku',
-    author_email='s@sh8.io',
+    author_email='s@sh8.io, kaku.l.aa@rio.gsic.titech.ac.jp',
     description='Polaris is a hyperparamter tuning \
             library focusing on reducing time of tuning.',
     long_description=get_long_description(),
