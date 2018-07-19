@@ -9,6 +9,9 @@ We plan to support every state-of-art tuning method as follows.
 -  Bayesian Optimization
 -  Tree-structured Parzen Estimators (TPE)
 
+## Documentation
+Polaris' documentation can be found at [https://polaris.readthedocs.io/](https://polaris.readthedocs.io/)
+
 ## Prerequisites
 - Python >= 3.6
 - RabbitMQ (Only for parallel execution)
