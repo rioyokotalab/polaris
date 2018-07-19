@@ -1,4 +1,4 @@
-# Polaris
+# Polaris : Hyperparamter optimization library.
 
 [![Documentation Status](https://readthedocs.org/projects/polaris/badge/?version=latest)](https://polaris.readthedocs.io/en/latest/?badge=latest)
 
