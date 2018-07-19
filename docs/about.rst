@@ -10,6 +10,9 @@ This library supports the experiments in both single and parallel execution.
 And also you can easily run your experiments in parallel on multi nodes.
 If you want to know more detail, please see :doc:`example page<example>`.
 
+Algorithms
+===========
+
 For now, we supports three optimization algorithms.
 
 * Random Search
