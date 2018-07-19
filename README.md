@@ -11,7 +11,7 @@ We plan to support every state-of-art tuning method as follows.
 
 ## Prerequisites
 - Python >= 3.6
-- RabbitMQ
+- RabbitMQ (Only for parallel execution)
 
 ## Installation
 
