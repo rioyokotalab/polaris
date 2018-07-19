@@ -54,6 +54,7 @@ Multiple Processes (Use MPI)
 -----------------------------
 
 #. Run `rabbitmq-server`
+#. Run `pip install mpi4py`
 #. Set `RABBITMQ_URL` environment variable (Ex: ampq://guest:guest@localhost//)
 #. Run `mpirun -n 4 polaris-worker --mpi --exp-key this_is_test`
 #. Run client as follows

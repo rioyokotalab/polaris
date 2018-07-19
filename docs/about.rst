@@ -6,14 +6,14 @@ About
 =========
 
 Polaris is a hyperparameter optimization library for Python.
-This library supports the experiments in both single and parallel execution.
+This library supports the experiments in both single and parallel.
 And also you can easily run your experiments in parallel on multi nodes.
 If you want to know more detail, please see :doc:`example page<example>`.
 
 Algorithms
 ===========
 
-For now, we supports three optimization algorithms.
+For now, we support three optimization algorithms.
 
 * Random Search
 * Bayesian Optimization
@@ -27,13 +27,13 @@ Architecture
 Single Execution
 -----------------
 
-Just call the function you pass with the parameter calculated from past trials and return best params.
+Just call the function you pass with the parameter calculated from the past trials and return best params.
 What you have to is just calling run() method from Polaris instance.
 
 Parallel Execution
 -------------------
 
-Polaris use RabbitMQ to pass a context of experiment from a client to worker.
+Polaris use RabbitMQ to pass a context of an experiment from a client to a worker.
 If you want to run experiments in parallel, you need to install RabbitMQ (see :doc:`here <install>`).
 
 You need to run both client and worker processes.
