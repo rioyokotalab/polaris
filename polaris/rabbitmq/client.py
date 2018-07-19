@@ -74,11 +74,12 @@ class JobClient():
 
         eval_count = self.polaris.exp_info['eval_count']
         max_evals = self.polaris.max_evals
-
         if eval_count > max_evals:
             return
 
         next_params = domain.predict(trials, min_ei)
+        if next_params is None:
+            return
 
         fn = self.polaris.fn
         fn_module = fn.__module__
