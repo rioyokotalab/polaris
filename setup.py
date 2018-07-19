@@ -14,8 +14,7 @@ setup(
     version='0.42',
     author='Shun Iwase, Linsho Kaku',
     author_email='s@sh8.io, kaku.l.aa@rio.gsic.titech.ac.jp',
-    description='Polaris is a hyperparamter tuning \
-            library focusing on reducing time of tuning.',
+    description='Polaris is a hyperparamter optimization library.',
     long_description=get_long_description(),
     classifiers=[
         'Development Status :: 3 - Alpha',
