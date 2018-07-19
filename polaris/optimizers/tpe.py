@@ -1,5 +1,7 @@
 import numpy as np
 import scipy as sp
+import statsmodels.nonparametric.kernel_density as kde
+
 
 DEFAULT_GAMMA = 0.25
 DEFAULT_BW = None
@@ -44,7 +46,6 @@ def minimize(
 
 
 def calc_next_params(domain, trials):
-    import statsmodels.api as sm
 
     gamma = DEFAULT_GAMMA
     bw = DEFAULT_BW
@@ -74,13 +75,13 @@ def calc_next_params(domain, trials):
 
     v_types = 'c' * domain.n_params
 
-    l_est = sm.nonparametric.KDEMultivariate(
+    l_est = kde.KDEMultivariate(
         x_l,
         v_types,
         bw=bw
     )
 
-    g_est = sm.nonparametric.KDEMultivariate(
+    g_est = kde.KDEMultivariate(
         x_g,
         v_types,
         bw=bw
