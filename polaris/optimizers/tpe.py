@@ -74,19 +74,19 @@ def calc_next_params(domain, trials):
 
     v_types = 'c' * domain.n_params
 
-    l = sm.nonparametric.KDEMultivariate(
+    l_est = sm.nonparametric.KDEMultivariate(
         x_l,
         v_types,
         bw=bw
     )
 
-    g = sm.nonparametric.KDEMultivariate(
+    g_est = sm.nonparametric.KDEMultivariate(
         x_g,
         v_types,
         bw=bw
     )
 
-    wide_bw = l.bw * bw_weight
+    wide_bw = l_est.bw * bw_weight
     for w in np.nditer(wide_bw, op_flags=['readwrite']):
         w[...] = max(w, 1e-3*bw_weight)
     bounds = domain.bounds
@@ -96,7 +96,7 @@ def calc_next_params(domain, trials):
         sampling_num=sampling_num,
         bw=wide_bw,
         bounds=bounds,
-        args=(l, g)
+        args=(l_est, g_est)
     )
 
     for index, fieldname in enumerate(domain.fieldnames):
