@@ -11,6 +11,7 @@ Welcome to Polaris's documentation!
    :caption: Contents:
    :numbered:
 
+   about
    install
    example
 
