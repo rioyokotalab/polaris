@@ -88,7 +88,7 @@ class Polaris(object):
 
             fn_params = copy.copy(params)
 
-            if self.args is not None:
+            if self.args is None:
                 exp_result = self.fn(fn_params, self.exp_info)
             else:
                 exp_result = self.fn(fn_params, self.exp_info, *self.args)

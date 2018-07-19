@@ -32,6 +32,14 @@ setup(
         ],
     platforms=['Linux', 'OS-X'],
     license='MIT',
-    install_requires=['numpy', 'scikit-learn', 'scipy', 'pika', 'mpi4py'],
+    install_requires=[
+        'numpy',
+        'scikit-learn',
+        'scipy',
+        'pika',
+        'mpi4py',
+        'statsmodels',
+        'matplotlib',
+    ],
     tests_require=['pytest'],
 )

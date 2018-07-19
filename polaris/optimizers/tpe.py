@@ -1,7 +1,5 @@
 import numpy as np
 import scipy as sp
-import statsmodels.api as sm
-
 
 DEFAULT_GAMMA = 0.25
 DEFAULT_BW = None
@@ -46,6 +44,8 @@ def minimize(
 
 
 def calc_next_params(domain, trials):
+    import statsmodels.api as sm
+
     gamma = DEFAULT_GAMMA
     bw = DEFAULT_BW
     n_min = DEFAULT_N_MIN
