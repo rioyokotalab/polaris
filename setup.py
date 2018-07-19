@@ -8,9 +8,10 @@ def get_long_description():
 
 
 setup(
-    name='polaris',
+    name='polaris-py',
     packages=find_packages(),
-    version='0.1',
+    scripts=['bin/polaris-worker'],
+    version='0.2',
     author='Shun Iwase, Linsho Kaku',
     author_email='s@sh8.io, kaku.l.aa@rio.gsic.titech.ac.jp',
     description='Polaris is a hyperparamter tuning \
@@ -26,7 +27,7 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
         'Operating System :: Unix',
-        'Programming Language :: Python :: 3'
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6'
         ],
     platforms=['Linux', 'OS-X'],

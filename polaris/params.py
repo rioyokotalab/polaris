@@ -11,6 +11,10 @@ OPTIMIZERS = {
 
 
 class Bounds:
+    """
+    A class to declare range of each hyperparameters.
+    For now, Polaris do not adapt to category variable.
+    """
 
     def __init__(self, label, low, high, q=None):
         self.label = label
@@ -23,6 +27,9 @@ class Bounds:
 
 
 class Domain:
+    """
+    A class to store bounds and searching new parameters.
+    """
 
     def __init__(self, bounds, algo='random'):
         self.n_params = len(bounds)
@@ -54,5 +61,5 @@ class Domain:
                 rand_param.append(round(p / b.q) * b.q)
         return np.array(rand_param)
 
-    def predict(self, trials):
-        return OPTIMIZERS[self._algo](self, trials)
+    def predict(self, trials, min_ei):
+        return OPTIMIZERS[self._algo](self, trials, min_ei)

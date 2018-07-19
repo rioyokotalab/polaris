@@ -1,5 +1,11 @@
 import os
+from urllib.parse import urlparse
 
-RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')
-RABBITMQ_USERNAME = os.getenv('RABBITMQ_USERNAME', None)
-RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', None)
+RABBITMQ_URL = os.getenv('RABBITMQ_URL', 'amqp://localhost//')
+url = urlparse(RABBITMQ_URL)
+
+RABBITMQ_HOST = url.hostname
+RABBITMQ_USERNAME = url.username
+RABBITMQ_PASSWORD = url.password
+RABBITMQ_PORT = 5672
+RABBITMQ_VIRTUAL_HOST = url.path[1:]
