@@ -55,7 +55,7 @@ class JobWorker():
             self.connection = pika.BlockingConnection(rabbitmq_params)
             self.channel = self.connection.channel()
             self.channel.queue_declare(queue=self.request_queue_name)
-            self.channel.queue_declare(queue=self.job_queue_name, auto_delete=True)
+            self.channel.queue_declare(queue=self.job_queue_name)
 
         if logger is None:
             import logging
