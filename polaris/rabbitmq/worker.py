@@ -29,24 +29,35 @@ class JobWorker():
         self.use_mpi = args.mpi
         self.debug = debug
 
-        self.job_queue_name = f'job_{self.exp_key}'
-        self.request_queue_name = f'request_{self.exp_key}'
+        if self.use_mpi:
+            from mpi4py import MPI
+            self.comm = MPI.COMM_WORLD
+            self.rank = self.comm.Get_rank()
 
-        if RABBITMQ_USERNAME and RABBITMQ_PASSWORD:
-            credentials = pika.PlainCredentials(
-                    RABBITMQ_USERNAME, RABBITMQ_PASSWORD)
-            rabbitmq_params = pika.ConnectionParameters(
-                    host=RABBITMQ_HOST,
-                    port=RABBITMQ_PORT,
-                    virtual_host=RABBITMQ_VIRTUAL_HOST,
-                    credentials=credentials)
-        else:
-            rabbitmq_params = pika.ConnectionParameters(
-                    host=RABBITMQ_HOST,
-                    port=RABBITMQ_PORT,
-                    virtual_host=RABBITMQ_VIRTUAL_HOST)
+        if self.use_mpi and self.rank == 0:
+            self.job_queue_name = f'job_{self.exp_key}'
+            self.request_queue_name = f'request_{self.exp_key}'
 
-        self.connection = pika.BlockingConnection(rabbitmq_params)
+            if RABBITMQ_USERNAME and RABBITMQ_PASSWORD:
+                credentials = pika.PlainCredentials(
+                        RABBITMQ_USERNAME, RABBITMQ_PASSWORD)
+                rabbitmq_params = pika.ConnectionParameters(
+                        host=RABBITMQ_HOST,
+                        port=RABBITMQ_PORT,
+                        virtual_host=RABBITMQ_VIRTUAL_HOST,
+                        credentials=credentials)
+            else:
+                rabbitmq_params = pika.ConnectionParameters(
+                        host=RABBITMQ_HOST,
+                        port=RABBITMQ_PORT,
+                        virtual_host=RABBITMQ_VIRTUAL_HOST)
+
+            self.connection = pika.BlockingConnection(rabbitmq_params)
+            self.channel = self.connection.channel()
+            self.channel.queue_declare(
+                    queue=self.request_queue_name, auto_delete=True)
+            self.channel.queue_declare(
+                    queue=self.job_queue_name, auto_delete=True)
 
         if logger is None:
             import logging
@@ -64,16 +75,6 @@ class JobWorker():
             self.logger.addHandler(stream)
         else:
             self.logger = logger
-
-        self.channel = self.connection.channel()
-        self.channel.queue_declare(
-                queue=self.request_queue_name, auto_delete=True)
-        self.channel.queue_declare(queue=self.job_queue_name, auto_delete=True)
-
-        if self.use_mpi:
-            from mpi4py import MPI
-            self.comm = MPI.COMM_WORLD
-            self.rank = self.comm.Get_rank()
 
     def start(self):
         try:
@@ -95,7 +96,9 @@ class JobWorker():
                     self.run(ctx)
         except KeyboardInterrupt:
             self.logger.info('Stop current worker...')
-            self.connection.close()
+
+            if (not self.use_mpi) or self.rank == 0:
+                self.connection.close()
 
             if self.use_mpi:
                 from mpi4py import MPI
