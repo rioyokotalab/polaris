@@ -49,8 +49,8 @@ class JobClient():
         self.channel = self.connection.channel()
         result = self.channel.queue_declare(exclusive=True)
         self.channel.queue_declare(
-                queue=self.request_queue_name, auto_delete=True)
-        self.channel.queue_declare(queue=self.job_queue_name, auto_delete=True)
+                queue=self.request_queue_name)
+        self.channel.queue_declare(queue=self.job_queue_name)
 
         self.callback_queue = result.method.queue
         self.channel.basic_consume(
