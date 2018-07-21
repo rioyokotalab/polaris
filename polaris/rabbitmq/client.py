@@ -11,7 +11,7 @@ from polaris.rabbitmq.config import (
 )
 
 
-class JobClient():
+class JobClient(object):
     """
     A client class for parallel experiments.
 

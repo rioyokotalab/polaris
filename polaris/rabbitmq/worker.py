@@ -13,7 +13,7 @@ from polaris.rabbitmq.config import (
 )
 
 
-class JobWorker():
+class JobWorker(object):
     """
     A worker class for parallel experiments.
 
@@ -34,7 +34,7 @@ class JobWorker():
             self.comm = MPI.COMM_WORLD
             self.rank = self.comm.Get_rank()
 
-        if self.use_mpi and self.rank == 0:
+        if (not self.use_mpi) or self.rank == 0:
             self.job_queue_name = f'job_{self.exp_key}'
             self.request_queue_name = f'request_{self.exp_key}'
 
@@ -56,6 +56,9 @@ class JobWorker():
             self.channel = self.connection.channel()
             self.channel.queue_declare(queue=self.request_queue_name)
             self.channel.queue_declare(queue=self.job_queue_name)
+            self.channel.basic_qos(prefetch_count=1)
+            self.channel.basic_consume(
+                    self.on_request, queue=self.job_queue_name)
 
         if logger is None:
             import logging
@@ -77,10 +80,6 @@ class JobWorker():
     def start(self):
         try:
             if (not self.use_mpi) or self.rank == 0:
-                self.channel.basic_qos(prefetch_count=1)
-
-                self.channel.basic_consume(
-                        self.on_request, queue=self.job_queue_name)
 
                 self.logger.info('Waiting for new job...')
 
@@ -110,19 +109,22 @@ class JobWorker():
             self.comm.bcast(ctx, root=0)
 
         exp_result = self.run(ctx)
+
         exp_payload = {
             'exp_result': exp_result,
             'params': ctx['params'],
             'exp_info': ctx['exp_info'],
         }
 
-        ch.basic_publish(
+        self.channel.basic_publish(
             exchange='',
             routing_key=props.reply_to,
             body=pickle.dumps(exp_payload)
         )
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+
         self.request_job()
+
+        self.channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def request_job(self):
         self.channel.basic_publish(
