@@ -1,5 +1,7 @@
 import copy
+import functools
 import importlib
+import threading
 import pickle
 
 import pika
@@ -80,7 +82,6 @@ class JobWorker(object):
     def start(self):
         try:
             if (not self.use_mpi) or self.rank == 0:
-
                 self.logger.info('Waiting for new job...')
 
                 self.request_job()
@@ -101,7 +102,18 @@ class JobWorker(object):
                 from mpi4py import MPI
                 MPI.Finalize()
 
-    def on_request(self, ch, method, props, body):
+    def ack_message(self, reply_to, delivery_tag, exp_payload):
+        self.channel.basic_publish(
+            exchange='',
+            routing_key=reply_to,
+            body=pickle.dumps(exp_payload)
+        )
+
+        self.request_job()
+
+        self.channel.basic_ack(delivery_tag=delivery_tag)
+
+    def run_thread(self, reply_to, delivery_tag, body):
         ctx = pickle.loads(body)
         self.logger.info(ctx)
 
@@ -116,15 +128,16 @@ class JobWorker(object):
             'exp_info': ctx['exp_info'],
         }
 
-        self.channel.basic_publish(
-            exchange='',
-            routing_key=props.reply_to,
-            body=pickle.dumps(exp_payload)
-        )
+        cb = functools.partial(
+                self.ack_message, reply_to,
+                delivery_tag, exp_payload)
+        self.connection.add_callback_threadsafe(cb)
 
-        self.request_job()
-
-        self.channel.basic_ack(delivery_tag=method.delivery_tag)
+    def on_request(self, ch, method, props, body):
+        t = threading.Thread(
+                target=self.run_thread,
+                args=(props.reply_to, method.delivery_tag, body))
+        t.start()
 
     def request_job(self):
         self.channel.basic_publish(

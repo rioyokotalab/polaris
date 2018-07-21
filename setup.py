@@ -35,7 +35,7 @@ setup(
         'numpy',
         'scikit-learn',
         'scipy',
-        'pika',
+        'pika==0.12.0',
         'statsmodels',
         'matplotlib',
     ],
