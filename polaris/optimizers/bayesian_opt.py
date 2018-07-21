@@ -17,7 +17,7 @@ def expected_improvement(x, model, lowest_loss):
     return -1 * ei
 
 
-def calc_next_params(domain, trials, min_ei):
+def calc_next_params(domain, trials):
     next_params = {}
 
     # At first time, get random params
@@ -39,7 +39,7 @@ def calc_next_params(domain, trials, min_ei):
     lowest_loss = trials.lowest_loss
 
     best_x = None
-    best_ei = 0.0
+    best_ei = -np.Inf
     n_iter = 400
 
     for _ in range(0, n_iter):
@@ -55,9 +55,6 @@ def calc_next_params(domain, trials, min_ei):
             best_ei = ei
             best_x = minimize_result.x
 
-    if best_x is not None and best_ei > min_ei:
-        for index, fieldname in enumerate(domain.fieldnames):
-            next_params[fieldname] = best_x[index]
-        return next_params
-    else:
-        return None
+    for index, fieldname in enumerate(domain.fieldnames):
+        next_params[fieldname] = best_x[index]
+    return next_params

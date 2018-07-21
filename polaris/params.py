@@ -61,5 +61,5 @@ class Domain:
                 rand_param.append(round(p / b.q) * b.q)
         return np.array(rand_param)
 
-    def predict(self, trials, min_ei):
-        return OPTIMIZERS[self._algo](self, trials, min_ei)
+    def predict(self, trials):
+        return OPTIMIZERS[self._algo](self, trials)
