@@ -10,6 +10,6 @@ if __name__ == '__main__':
     trials = Trials()
     polaris = Polaris(
             pseudo_train, bounds, 'bayesian_opt',
-            trials, max_evals=10, debug=True, exp_key='this_is_test')
+            trials, max_evals=100, debug=True, exp_key='this_is_test')
     best_params = polaris.run()
     print('best params: ', best_params)

@@ -23,6 +23,9 @@ class JobClient(object):
     """
 
     def __init__(self, polaris):
+        self.parallel_count = 0
+        self.next_params_candidates = []
+
         self.polaris = polaris
         self.exp_key = polaris.exp_key
         self.logger = polaris.logger
@@ -50,6 +53,7 @@ class JobClient(object):
         result = self.channel.queue_declare(exclusive=True)
         self.channel.queue_declare(queue=self.request_queue_name)
         self.channel.queue_declare(queue=self.job_queue_name)
+        self.channel.basic_qos(prefetch_count=1)
 
         self.callback_queue = result.method.queue
         self.channel.basic_consume(
@@ -63,10 +67,11 @@ class JobClient(object):
         After receiving request, this method will send a job to them.
         """
 
+        print('-------- start ----------')
         self.send_job()
+        print('-------- finish ----------')
 
     def send_job(self):
-
         domain = self.polaris.domain
         trials = self.polaris.trials
 
@@ -75,7 +80,17 @@ class JobClient(object):
         if eval_count > max_evals:
             return
 
-        next_params = domain.predict(trials)
+        if self.parallel_count == 0:
+            self.next_params_candidates = domain.predict(trials)
+            next_params = self.next_params_candidates[0]
+        else:
+            candidates_count = len(self.next_params_candidates)
+            if self.parallel_count < candidates_count:
+                next_params = self.next_params_candidates[self.parallel_count]
+            else:
+                next_params = domain.random()
+
+        self.parallel_count += 1
 
         fn = self.polaris.fn
         fn_module = fn.__module__
@@ -115,6 +130,7 @@ class JobClient(object):
         exp_info = exp_payload['exp_info']
 
         self.polaris.trials.add(exp_result, params, exp_info)
+        self.parallel_count = 0
 
         with open(f'{self.exp_key}.p', mode='wb') as f:
             pickle.dump(self.polaris.trials, f)

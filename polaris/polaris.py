@@ -79,7 +79,7 @@ class Polaris(object):
 
         self.logger.info('Start searching...')
         for eval_count in range(self.exp_info['eval_count'], self.max_evals+1):
-            params = self.domain.predict(self.trials)
+            params = self.domain.predict(self.trials)[0]
 
             fn_params = copy.copy(params)
 
