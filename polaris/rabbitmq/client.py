@@ -67,9 +67,7 @@ class JobClient(object):
         After receiving request, this method will send a job to them.
         """
 
-        print('-------- start ----------')
         self.send_job()
-        print('-------- finish ----------')
 
     def send_job(self):
         domain = self.polaris.domain
@@ -88,8 +86,10 @@ class JobClient(object):
             if self.parallel_count < candidates_count:
                 next_params = self.next_params_candidates[self.parallel_count]
             else:
-                next_params = domain.random()
-
+                next_params = {}
+                random_params = domain.random()
+                for index, fieldname in enumerate(domain.fieldnames):
+                    next_params[fieldname] = random_params[index]
         self.parallel_count += 1
 
         fn = self.polaris.fn
@@ -123,7 +123,6 @@ class JobClient(object):
         """
         A method to receive the result of experiment from workers.
         """
-
         exp_payload = pickle.loads(body)
         exp_result = exp_payload['exp_result']
         params = exp_payload['params']
