@@ -1,7 +1,6 @@
 import copy
 import functools
 import importlib
-import threading
 import pickle
 
 import pika
@@ -47,12 +46,14 @@ class JobWorker(object):
                         host=RABBITMQ_HOST,
                         port=RABBITMQ_PORT,
                         virtual_host=RABBITMQ_VIRTUAL_HOST,
-                        credentials=credentials)
+                        credentials=credentials,
+                        heartbeat_interval=0)
             else:
                 rabbitmq_params = pika.ConnectionParameters(
                         host=RABBITMQ_HOST,
                         port=RABBITMQ_PORT,
-                        virtual_host=RABBITMQ_VIRTUAL_HOST)
+                        virtual_host=RABBITMQ_VIRTUAL_HOST,
+                        heartbeat_interval=0)
 
             self.connection = pika.BlockingConnection(rabbitmq_params)
             self.channel = self.connection.channel()
@@ -102,23 +103,12 @@ class JobWorker(object):
                 from mpi4py import MPI
                 MPI.Finalize()
 
-    def ack_message(self, reply_to, delivery_tag, exp_payload):
-        self.channel.basic_publish(
-            exchange='',
-            routing_key=reply_to,
-            body=pickle.dumps(exp_payload)
-        )
-
-        self.request_job()
-
-        self.channel.basic_ack(delivery_tag=delivery_tag)
-
-    def run_thread(self, reply_to, delivery_tag, body):
+    def on_request(self, ch, method, props, body):
         ctx = pickle.loads(body)
         self.logger.info(ctx)
 
         if self.use_mpi:
-            self.comm.bcast(ctx, root=0)
+            ctx = self.comm.bcast(ctx, root=0)
 
         exp_result = self.run(ctx)
 
@@ -128,16 +118,15 @@ class JobWorker(object):
             'exp_info': ctx['exp_info'],
         }
 
-        cb = functools.partial(
-                self.ack_message, reply_to,
-                delivery_tag, exp_payload)
-        self.connection.add_callback_threadsafe(cb)
+        self.channel.basic_publish(
+            exchange='',
+            routing_key=props.reply_to,
+            body=pickle.dumps(exp_payload)
+        )
 
-    def on_request(self, ch, method, props, body):
-        t = threading.Thread(
-                target=self.run_thread,
-                args=(props.reply_to, method.delivery_tag, body))
-        t.start()
+        self.request_job()
+
+        self.channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def request_job(self):
         self.channel.basic_publish(

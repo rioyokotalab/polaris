@@ -1,5 +1,4 @@
 import argparse
-import pickle
 
 from polaris import Polaris, Trials, Bounds
 
