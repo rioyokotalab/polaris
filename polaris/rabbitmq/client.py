@@ -151,4 +151,6 @@ class JobClient(object):
         try:
             self.channel.start_consuming()
         except (pika.exceptions.ChannelClosed, KeyboardInterrupt):
+            self.channel.queue_delete(queue=self.request_queue_name)
+            self.channel.queue_delete(queue=self.job_queue_name)
             self.logger.info('All jobs have finished')
