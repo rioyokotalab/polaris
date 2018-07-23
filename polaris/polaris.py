@@ -84,29 +84,55 @@ class Polaris(object):
 
         if use_mpi:
             from mpi4py import MPI
-            comm = MPI.COMM_WORLD
-            rank = comm.Get_rank()
+            self.run_with_mpi()
+            MPI.Finalize()
+        else:
+            self.run_single()
 
+    def run_single(self):
         self.logger.info('Start searching...')
 
         for eval_count in range(self.exp_info['eval_count'], self.max_evals+1):
-            not_mpi_or_rank_zero = not use_mpi or rank == 0
-
-            if not_mpi_or_rank_zero:
-                params = self.domain.predict(self.trials)[0]
-                fn_params = copy.copy(params)
-            else:
-                fn_params = None
-
-            if use_mpi:
-                fn_params = comm.bcast(fn_params, root=0)
+            params = self.domain.predict(self.trials)[0]
+            fn_params = copy.copy(params)
 
             if self.args is None:
                 exp_result = self.fn(fn_params, self.exp_info)
             else:
                 exp_result = self.fn(fn_params, self.exp_info, *self.args)
 
-            if not_mpi_or_rank_zero:
+            self.trials.add(exp_result, params, self.exp_info)
+            self.exp_info['eval_count'] += 1
+            self.logger.debug(fn_params)
+
+            with open(f'{self.exp_key}.p', mode='wb') as f:
+                pickle.dump(self.trials, f)
+
+        return self.trials.best_params
+
+    def run_with_mpi(self):
+        from mpi4py import MPI
+
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+
+        if rank == 0:
+            self.logger.info('Start searching...')
+
+        for eval_count in range(self.exp_info['eval_count'], self.max_evals+1):
+            if rank == 0:
+                params = self.domain.predict(self.trials)[0]
+                fn_params = copy.copy(params)
+            else:
+                fn_params = None
+            fn_params = comm.bcast(fn_params, root=0)
+
+            if self.args is None:
+                exp_result = self.fn(fn_params, self.exp_info)
+            else:
+                exp_result = self.fn(fn_params, self.exp_info, *self.args)
+
+            if rank == 0:
                 self.trials.add(exp_result, params, self.exp_info)
                 self.exp_info['eval_count'] += 1
                 self.logger.debug(fn_params)
@@ -114,7 +140,7 @@ class Polaris(object):
                 with open(f'{self.exp_key}.p', mode='wb') as f:
                     pickle.dump(self.trials, f)
 
-        if not_mpi_or_rank_zero:
+        if rank == 0:
             return self.trials.best_params
 
     def run_parallel(self):
