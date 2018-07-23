@@ -111,15 +111,11 @@ class Polaris(object):
         return self.trials.best_params
 
     def run_with_mpi(self):
-        from mpi4py import MPI
-
-        comm = MPI.COMM_WORLD
-        rank = comm.Get_rank()
-
-        if rank == 0:
-            self.logger.info('Start searching...')
-
         for eval_count in range(self.exp_info['eval_count'], self.max_evals+1):
+            from mpi4py import MPI
+            comm = MPI.COMM_WORLD
+            rank = comm.Get_rank()
+
             if rank == 0:
                 params = self.domain.predict(self.trials)[0]
                 fn_params = copy.copy(params)
