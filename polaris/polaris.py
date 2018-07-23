@@ -78,24 +78,27 @@ class Polaris(object):
 
         Parameters
         ----------
-        use_mpi : callable
+        use_mpi : boolean
             boolean for using mpi or not
         """
 
         if use_mpi:
             from mpi4py import MPI
             comm = MPI.COMM_WORLD
-            rank = self.comm.Get_rank()
+            rank = comm.Get_rank()
 
         self.logger.info('Start searching...')
+
         for eval_count in range(self.exp_info['eval_count'], self.max_evals+1):
+            not_mpi_or_rank_zero = not use_mpi or rank == 0
+
+            if not_mpi_or_rank_zero:
+                params = self.domain.predict(self.trials)[0]
+                fn_params = copy.copy(params)
+            else:
+                fn_params = None
 
             if use_mpi:
-                if rank == 0:
-                    params = self.domain.predict(self.trials)[0]
-                    fn_params = copy.copy(params)
-                else:
-                    fn_params = None
                 fn_params = comm.bcast(fn_params, root=0)
 
             if self.args is None:
@@ -103,15 +106,16 @@ class Polaris(object):
             else:
                 exp_result = self.fn(fn_params, self.exp_info, *self.args)
 
-            self.trials.add(exp_result, params, self.exp_info)
-            self.exp_info['eval_count'] += 1
+            if not_mpi_or_rank_zero:
+                self.trials.add(exp_result, params, self.exp_info)
+                self.exp_info['eval_count'] += 1
+                self.logger.debug(fn_params)
 
-            self.logger.debug(fn_params)
+                with open(f'{self.exp_key}.p', mode='wb') as f:
+                    pickle.dump(self.trials, f)
 
-            with open(f'{self.exp_key}.p', mode='wb') as f:
-                pickle.dump(self.trials, f)
-
-        return self.trials.best_params
+        if not_mpi_or_rank_zero:
+            return self.trials.best_params
 
     def run_parallel(self):
         """

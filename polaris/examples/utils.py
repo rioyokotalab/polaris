@@ -1,5 +1,3 @@
-import time
-
 from polaris import STATUS_SUCCESS
 
 
