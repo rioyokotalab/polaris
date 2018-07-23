@@ -71,17 +71,32 @@ class Polaris(object):
 
         self.domain = Domain(self.bounds, algo=self.algo)
 
-    def run(self):
+    def run(self, use_mpi=False):
         """
         Run an experiment sequentially with one process up to max_evals count.
         The expriment will early stop, if params become None
+
+        Parameters
+        ----------
+        use_mpi : callable
+            boolean for using mpi or not
         """
+
+        if self.use_mpi:
+            from mpi4py import MPI
+            comm = MPI.COMM_WORLD
+            rank = self.comm.Get_rank()
 
         self.logger.info('Start searching...')
         for eval_count in range(self.exp_info['eval_count'], self.max_evals+1):
-            params = self.domain.predict(self.trials)[0]
 
-            fn_params = copy.copy(params)
+            if self.use_mpi:
+                if rank == 0:
+                    params = self.domain.predict(self.trials)[0]
+                    fn_params = copy.copy(params)
+                else:
+                    fn_params = None
+                fn_params = comm.bcast(fn_params, root=0)
 
             if self.args is None:
                 exp_result = self.fn(fn_params, self.exp_info)
