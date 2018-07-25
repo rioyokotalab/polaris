@@ -83,9 +83,7 @@ class Polaris(object):
         """
 
         if use_mpi:
-            from mpi4py import MPI
             self.run_with_mpi()
-            MPI.Finalize()
         else:
             self.run_single()
 
@@ -111,11 +109,11 @@ class Polaris(object):
         return self.trials.best_params
 
     def run_with_mpi(self):
-        for eval_count in range(self.exp_info['eval_count'], self.max_evals+1):
-            from mpi4py import MPI
-            comm = MPI.COMM_WORLD
-            rank = comm.Get_rank()
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
 
+        for eval_count in range(self.exp_info['eval_count'], self.max_evals+1):
             if rank == 0:
                 params = self.domain.predict(self.trials)[0]
                 fn_params = copy.copy(params)
