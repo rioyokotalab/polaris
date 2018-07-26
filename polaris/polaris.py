@@ -12,7 +12,7 @@ class Polaris(object):
 
     def __init__(
             self, fn, bounds, algo, trials,
-            max_evals=10, exp_key=None,
+            max_evals=10, run_once=False, exp_key=None,
             logger=None, debug=False, args=None):
         """
         Parameters
@@ -42,6 +42,7 @@ class Polaris(object):
         self.algo = algo
         self.trials = trials
         self.max_evals = max_evals
+        self.run_once = run_once
         self.debug = debug
         self.args = args
         if exp_key is None:
@@ -106,6 +107,9 @@ class Polaris(object):
             with open(f'{self.exp_key}.p', mode='wb') as f:
                 pickle.dump(self.trials, f)
 
+            if self.run_once:
+                break
+
         return self.trials.best_params
 
     def run_with_mpi(self):
@@ -133,6 +137,9 @@ class Polaris(object):
 
                 with open(f'{self.exp_key}.p', mode='wb') as f:
                     pickle.dump(self.trials, f)
+
+            if self.run_once:
+                break
 
         if rank == 0:
             return self.trials.best_params

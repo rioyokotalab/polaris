@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser(
         description='Start a job worker for polaris')
 parser.add_argument('--exp-key', '--e', required=True)
 parser.add_argument('--mpi', '--m', action='store_true')
+parser.add_argument('--run-once', action='store_true')
 args = parser.parse_args()
 
 worker = JobWorker(args)

@@ -29,6 +29,7 @@ class JobWorker(object):
         self.exp_key = args.exp_key
         self.use_mpi = args.mpi
         self.debug = debug
+        self.run_once = args.run_once
 
         if self.use_mpi:
             from mpi4py import MPI
@@ -93,6 +94,8 @@ class JobWorker(object):
                     ctx = None
                     ctx = self.comm.bcast(ctx, root=0)
                     self.run(ctx)
+                    if self.run_once:
+                        break
         except KeyboardInterrupt:
             self.logger.info('Stop current worker...')
 
@@ -124,9 +127,12 @@ class JobWorker(object):
             body=pickle.dumps(exp_payload)
         )
 
-        self.request_job()
-
         self.channel.basic_ack(delivery_tag=method.delivery_tag)
+
+        if self.run_once:
+            self.connection.close()
+        else:
+            self.request_job()
 
     def request_job(self):
         self.channel.basic_publish(
